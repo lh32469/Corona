@@ -1,0 +1,13 @@
+server:
+  http2:
+    enabled: true
+
+corona:
+  data:
+    # repo: /Users/lh32469/Projects/COVID-19/csse_covid_19_data/csse_covid_19_daily_reports
+    repo: COVID/csse_covid_19_data/csse_covid_19_daily_reports
+
+logging:
+  pattern:
+    dateformat: MM-dd HH:mm:ss.SSS,America/Los_Angeles
+
