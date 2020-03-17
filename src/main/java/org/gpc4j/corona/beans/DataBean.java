@@ -62,7 +62,6 @@ public class DataBean implements Serializable {
     Map<String, List<CSVRecord>> data = new TreeMap<>();
 
     files
-        .peek(f -> LOG.info("Evaluating file: " + f))
         .filter(f -> f.toString().endsWith(".csv"))
         .forEach(f -> {
       try {

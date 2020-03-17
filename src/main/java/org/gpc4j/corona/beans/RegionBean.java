@@ -3,6 +3,7 @@ package org.gpc4j.corona.beans;
 import org.primefaces.model.chart.Axis;
 import org.primefaces.model.chart.AxisType;
 import org.primefaces.model.chart.LineChartModel;
+import org.primefaces.model.chart.LineChartSeries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -13,6 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 
 /**
@@ -106,23 +108,8 @@ public class RegionBean {
       return cumulativeGraph;
     }
 
-    cumulativeGraph = createChart("Cumulative Cases by State");
-
-    /*
-     * By default, only show top 15 States.
-     */
-    if (states == null) {
-      dataBean.getCumulative()
-          .limit(15)
-          .forEachOrdered(series -> cumulativeGraph.addSeries(series));
-    } else {
-      dataBean.getCumulative()
-          .filter(series -> {
-            String symbol = syms.get(series.getLabel());
-            return symbol != null && states.contains(symbol);
-          })
-          .forEachOrdered(series -> cumulativeGraph.addSeries(series));
-    }
+    cumulativeGraph = createChart("Cumulative Cases by State  (Top 15)");
+    processGraph(activeGraph, dataBean.getCumulative());
 
     return cumulativeGraph;
   }
@@ -132,25 +119,33 @@ public class RegionBean {
       return activeGraph;
     }
 
-    activeGraph = createChart("Active Cases by State");
+    activeGraph = createChart("Active Cases by State (Top 15)");
+    processGraph(activeGraph, dataBean.getActive());
 
-    /*
-     * By default, only show top 15 States.
-     */
+    return activeGraph;
+  }
+
+  /**
+   * Apply rules based on QueryParams to LineChartSeries
+   * provided and populate LineChartModel accordingly.
+   */
+  void processGraph(
+      final LineChartModel chart,
+      final Stream<LineChartSeries> chartSeries) {
+
     if (states == null) {
-      dataBean.getActive()
+      // By default, only show top 15 States.
+      chartSeries
           .limit(15)
-          .forEachOrdered(series -> activeGraph.addSeries(series));
+          .forEachOrdered(chart::addSeries);
     } else {
-      dataBean.getActive()
+      chartSeries
           .filter(series -> {
             String symbol = syms.get(series.getLabel());
             return symbol != null && states.contains(symbol);
           })
-          .forEachOrdered(series -> activeGraph.addSeries(series));
+          .forEachOrdered(chart::addSeries);
     }
-
-    return activeGraph;
   }
 
 
