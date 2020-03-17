@@ -1,5 +1,8 @@
 package org.gpc4j.corona.beans;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.primefaces.model.chart.LineChartSeries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -18,7 +22,8 @@ import java.util.stream.Stream;
 @Named
 public class DataBean implements Serializable {
 
-  private List<LineChartSeries> lineChartSeries;
+  private List<LineChartSeries> cumulative;
+  private List<LineChartSeries> active;
 
   @Value("${corona.data.repo}")
   String repoDir;
@@ -31,38 +36,48 @@ public class DataBean implements Serializable {
   public void postConstruct() {
     LOG.info("postConstruct");
     try {
-      lineChartSeries = processData(loadData());
+
+      final Map<String, List<CSVRecord>> data = loadData();
+      active = processActive(data);
+      cumulative = processCumulative(data);
+
     } catch (IOException e) {
       e.printStackTrace();
     }
   }
 
-  public Stream<LineChartSeries> getLineChartSeries() {
-    return lineChartSeries.parallelStream();
+  public Stream<LineChartSeries> getCumulative() {
+    return cumulative.parallelStream();
   }
 
-  public Map<String, List<String>> loadData() throws IOException {
+  public Stream<LineChartSeries> getActive() {
+    return active.parallelStream();
+  }
+
+  public Map<String, List<CSVRecord>> loadData() throws IOException {
 
     LOG.info("Loading data from: " + repoDir);
 
-    Map<String, List<String>> data = new TreeMap<>();
-
     Stream<Path> files = Files.list(Path.of(repoDir));
+    Map<String, List<CSVRecord>> data = new TreeMap<>();
 
-    files.forEach(f -> {
+    files
+        .peek(f -> LOG.info("Evaluating file: " + f))
+        .filter(f -> f.toString().endsWith(".csv"))
+        .forEach(f -> {
       try {
-        List<String> lines = Files.readAllLines(f)
-            .stream()
-            .skip(1)
-            .filter(line -> !line.contains("Princess"))
-//            .peek(line -> LOG.info("line: " + line))
-            .filter(line -> {
-              String[] array = line.split(",");
-              return array[1].equals("US");
-            })
+
+        FileReader reader = new FileReader(f.toFile());
+        CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
+        List<CSVRecord> records = parser.getRecords().parallelStream()
+            .filter(r -> r.size() > 3)
+            .filter(r -> "US".equals(r.get(1)))
+            .filter(r -> r.get(2).startsWith("2020"))
+            .filter(r -> !r.get(0).contains(","))
             .collect(Collectors.toList());
-        if (!lines.isEmpty()) {
-          data.put(f.getFileName().toString(), lines);
+
+        if (!records.isEmpty()) {
+          data.put(f.getFileName().toString(), records);
         }
 
       } catch (IOException e) {
@@ -70,41 +85,93 @@ public class DataBean implements Serializable {
       }
     });
 
-    LOG.info("Loaded: " + data.size() + " entries");
+    LOG.info("Loaded " + data.size() + " files");
 
     return data;
   }
 
 
-  public List<LineChartSeries> processData(Map<String, List<String>> data) {
+  public List<LineChartSeries> processCumulative(Map<String, List<CSVRecord>> data) {
+
+    Map<String, LineChartSeries> chartSeriesMap = new HashMap<>();
+
+    int index = 0;
+    for (String day : data.keySet()) {
+      List<CSVRecord> dayData = data.get(day);
+      for (CSVRecord stateRecord : dayData) {
+
+        final String stateName = stateRecord.get(0);
+        LineChartSeries stateSeries = chartSeriesMap.get(stateName);
+        if (stateSeries == null) {
+          stateSeries = new LineChartSeries();
+          stateSeries.setLabel(stateName);
+          chartSeriesMap.put(stateName, stateSeries);
+        }
+
+        stateSeries.set(index, Integer.parseInt(stateRecord.get(3)));
+      }
+
+      index++;
+    }
+
+    LOG.info("Added " + chartSeriesMap.values().size() + " cumulative states.");
+
+    return sortCharts(chartSeriesMap.values());
+  }
+
+
+  public List<LineChartSeries> processActive(Map<String, List<CSVRecord>> data) {
 
     Map<String, LineChartSeries> chartSeriesMap = new HashMap<>();
 
     int index = 0;
 
     for (String day : data.keySet()) {
-      //LOG.info("Adding Day: " + day);
-      List<String> dayData = data.get(day);
-      for (String stateData : dayData) {
-        String[] array = stateData.split(",");
-//        System.out.println("state: " + array[0] +
-//            " = " + array[3]);
+      List<CSVRecord> dayData = data.get(day);
+      for (CSVRecord stateRecord : dayData) {
 
-        LineChartSeries state = chartSeriesMap.get(array[0]);
-        if (state == null) {
-          state = new LineChartSeries();
-          state.setLabel(array[0]);
-          chartSeriesMap.put(array[0], state);
+        final String stateName = stateRecord.get(0);
+        LineChartSeries stateSeries = chartSeriesMap.get(stateName);
+        if (stateSeries == null) {
+          stateSeries = new LineChartSeries();
+          stateSeries.setLabel(stateName);
+          chartSeriesMap.put(stateName, stateSeries);
         }
 
-        state.set(index, Integer.parseInt(array[3]));
+        int confirmed = 0;
+        int deaths = 0;
+        int recovered = 0;
+
+        try {
+          confirmed = Integer.parseInt(stateRecord.get(3));
+        } catch (NumberFormatException ex) {
+          LOG.info(ex + "\n" + stateRecord);
+        }
+        try {
+          deaths = Integer.parseInt(stateRecord.get(4));
+        } catch (NumberFormatException ex) {
+          LOG.info(ex + "\n" + stateRecord);
+        }
+        try {
+          recovered = Integer.parseInt(stateRecord.get(5));
+        } catch (NumberFormatException ex) {
+          LOG.info(ex + "\n" + stateRecord);
+        }
+
+        stateSeries.set(index, confirmed - deaths - recovered);
       }
 
       index++;
     }
 
-    LOG.info("Added " + chartSeriesMap.values().size() + " states.");
-    return chartSeriesMap.values().stream()
+    LOG.info("Added " + chartSeriesMap.values().size() + " active states.");
+
+    return sortCharts(chartSeriesMap.values());
+  }
+
+  List<LineChartSeries> sortCharts(Collection<LineChartSeries> chartSeries) {
+
+    List<LineChartSeries> sorted = chartSeries.stream()
         .sorted((s1, s2) -> {
 
           int s1Max = s1.getData()
@@ -124,22 +191,8 @@ public class DataBean implements Serializable {
           return s2Max - s1Max;
         })
         .collect(Collectors.toList());
+
+    return sorted;
   }
 
-
-  public static void main(String[] args) throws IOException {
-    DataBean bean = new DataBean();
-    Map<String, List<String>> data = bean.loadData();
-    System.out.println("data = " + data);
-
-    Collection<LineChartSeries> processed = bean.processData(data);
-    System.out.println("chartSeriesMap = " + bean.processData(data));
-
-    LineChartSeries oregon = processed.stream()
-        .filter(s -> s.getLabel().equals("Oregon"))
-        .findAny()
-        .get();
-
-    System.out.println("oregon.getData() = " + oregon.getData());
-  }
 }

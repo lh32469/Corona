@@ -3,7 +3,6 @@ package org.gpc4j.corona.beans;
 import org.primefaces.model.chart.Axis;
 import org.primefaces.model.chart.AxisType;
 import org.primefaces.model.chart.LineChartModel;
-import org.primefaces.model.chart.LineChartSeries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -13,9 +12,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
 /**
@@ -25,7 +22,8 @@ import java.util.stream.Collectors;
 @Scope("request")
 public class RegionBean {
 
-  LineChartModel regionGraph;
+  LineChartModel activeGraph;
+  LineChartModel cumulativeGraph;
 
   static final Map<String, String> syms = new HashMap<>();
 
@@ -89,55 +87,88 @@ public class RegionBean {
 
   @Inject
   private DataBean dataBean;
+  private String states;
 
   @PostConstruct
   public void postConstruct() {
 
     Map<String, String> params = FacesContext.getCurrentInstance().
         getExternalContext().getRequestParameterMap();
-    final String states = params.get("states");
 
-    regionGraph = new LineChartModel();
-    regionGraph.setTitle("Cumulative Cases by State");
-    regionGraph.setLegendPosition("n");
+    states = params.get("states");
+    if (states != null) {
+      states = states.toUpperCase();
+    }
+  }
 
-    Axis xAxis = regionGraph.getAxis(AxisType.X);
-    xAxis.setLabel("# Days");
-    xAxis.setMin(0);
+  public LineChartModel getCumulative() {
+    if (cumulativeGraph != null) {
+      return cumulativeGraph;
+    }
 
-    Axis yAxis = regionGraph.getAxis(AxisType.Y);
-    yAxis.setLabel("# Cases");
-    yAxis.setMin(0);
-
-    List<LineChartSeries> chartSeriesCollection;
+    cumulativeGraph = createChart("Cumulative Cases by State");
 
     /*
      * By default, only show top 15 States.
      */
     if (states == null) {
-      chartSeriesCollection = dataBean.getLineChartSeries()
+      dataBean.getCumulative()
           .limit(15)
-          .collect(Collectors.toList());
+          .forEachOrdered(series -> cumulativeGraph.addSeries(series));
     } else {
-      // Convert to uppercase and final for lambda
-      final String states2 = states.toUpperCase();
-      chartSeriesCollection = dataBean.getLineChartSeries()
-          .filter(cs -> {
-            String symbol = syms.get(cs.getLabel());
-            return symbol != null && states2.contains(symbol);
+      dataBean.getCumulative()
+          .filter(series -> {
+            String symbol = syms.get(series.getLabel());
+            return symbol != null && states.contains(symbol);
           })
-          .collect(Collectors.toList());
+          .forEachOrdered(series -> cumulativeGraph.addSeries(series));
     }
 
-    for (LineChartSeries series : chartSeriesCollection) {
-      regionGraph.addSeries(series);
+    return cumulativeGraph;
+  }
+
+  public LineChartModel getActive() {
+    if (activeGraph != null) {
+      return activeGraph;
     }
 
+    activeGraph = createChart("Active Cases by State");
+
+    /*
+     * By default, only show top 15 States.
+     */
+    if (states == null) {
+      dataBean.getActive()
+          .limit(15)
+          .forEachOrdered(series -> activeGraph.addSeries(series));
+    } else {
+      dataBean.getActive()
+          .filter(series -> {
+            String symbol = syms.get(series.getLabel());
+            return symbol != null && states.contains(symbol);
+          })
+          .forEachOrdered(series -> activeGraph.addSeries(series));
+    }
+
+    return activeGraph;
   }
 
-  public LineChartModel getGraph() {
-    return regionGraph;
-  }
 
+  LineChartModel createChart(final String title) {
+
+    LineChartModel chart = new LineChartModel();
+    chart.setTitle(title);
+    chart.setLegendPosition("n");
+
+    Axis xAxis = chart.getAxis(AxisType.X);
+    xAxis.setLabel("# Days");
+    xAxis.setMin(14);
+
+    Axis yAxis = chart.getAxis(AxisType.Y);
+    yAxis.setLabel("# Cases");
+    yAxis.setMin(0);
+
+    return chart;
+  }
 
 }

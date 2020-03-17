@@ -9,14 +9,14 @@
 <h:head>
   <title>Corona App</title>
   <meta name="description"
-        content="Graph of Cumulative Cases in Region" />
+        content="Graph of Active Cases in Region" />
 </h:head>
 <h:body>
 
   <h:form id="iForm">
     <p:panelGrid columns="2" style="margin: auto" >
       <p:chart type="line"
-               model="#{region.cumulative}"
+               model="#{region.active}"
                style="width:1250px;height:900px;border: 20px" />
 
     </p:panelGrid>
