@@ -5,8 +5,10 @@ server:
     enabled: true
 
 corona:
+  # Default number of States to display if no QueryParam
+  states: 10
+  # Location of downloaded repo: https://github.com/CSSEGISandData/COVID-19
   data:
-    # repo: /Users/lh32469/Projects/COVID-19/csse_covid_19_data/csse_covid_19_daily_reports
     repo: COVID/csse_covid_19_data/csse_covid_19_daily_reports
 
 logging:

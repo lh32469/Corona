@@ -6,6 +6,7 @@ import org.primefaces.model.chart.LineChartModel;
 import org.primefaces.model.chart.LineChartSeries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 
 import javax.annotation.PostConstruct;
@@ -87,8 +88,21 @@ public class RegionBean {
   final static private Logger LOG
       = LoggerFactory.getLogger(RegionBean.class);
 
+  /**
+   * Application Scoped Bean containing data.
+   */
   @Inject
   private DataBean dataBean;
+
+  /**
+   * Default number of States to display if no QueryParam
+   */
+  @Value("${corona.states}")
+  int maxStates;
+
+  /**
+   * Value of QueryParam for explicitly selecting States to display.
+   */
   private String states;
 
   @PostConstruct
@@ -108,8 +122,8 @@ public class RegionBean {
       return cumulativeGraph;
     }
 
-    cumulativeGraph = createChart("Cumulative Cases by State  (Top 15)");
-    processGraph(activeGraph, dataBean.getCumulative());
+    cumulativeGraph = createChart("Cumulative Cases by State");
+    processGraph(cumulativeGraph, dataBean.getCumulative());
 
     return cumulativeGraph;
   }
@@ -119,7 +133,7 @@ public class RegionBean {
       return activeGraph;
     }
 
-    activeGraph = createChart("Active Cases by State (Top 15)");
+    activeGraph = createChart("Active Cases by State");
     processGraph(activeGraph, dataBean.getActive());
 
     return activeGraph;
@@ -134,9 +148,10 @@ public class RegionBean {
       final Stream<LineChartSeries> chartSeries) {
 
     if (states == null) {
-      // By default, only show top 15 States.
+      // By default, only show top 'maxStates' number of States.
+      chart.setTitle(chart.getTitle() + " (Top " + maxStates + ")");
       chartSeries
-          .limit(15)
+          .limit(maxStates)
           .forEachOrdered(chart::addSeries);
     } else {
       chartSeries
