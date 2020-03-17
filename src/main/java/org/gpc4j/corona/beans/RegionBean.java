@@ -12,7 +12,9 @@ import javax.annotation.PostConstruct;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -28,18 +30,58 @@ public class RegionBean {
   static final Map<String, String> syms = new HashMap<>();
 
   static {
-    syms.put("AZ", "Arizona");
-    syms.put("CO", "Colorado");
-    syms.put("FL", "Florida");
-    syms.put("IL", "Illinois");
-    syms.put("MI", "Michigan");
-    syms.put("NY", "New York");
-    syms.put("NJ", "New Jersey");
-    syms.put("OR", "Oregon");
-    syms.put("CA", "California");
-    syms.put("WA", "Washington");
-    syms.put("MA", "Massachusetts");
-    syms.put("TX", "Texas");
+
+    syms.put("Alabama", "AL");
+    syms.put("Alaska", "AK");
+    syms.put("Arizona", "AZ");
+    syms.put("Arkansas", "AR");
+    syms.put("California", "CA");
+    syms.put("Colorado", "CO");
+    syms.put("Connecticut", "CT");
+    syms.put("Delaware", "DE");
+    syms.put("Florida", "FL");
+    syms.put("Georgia", "GA");
+    syms.put("Hawaii", "HI");
+    syms.put("Idaho", "ID");
+    syms.put("Illinois", "IL");
+    syms.put("Indiana", "IN");
+    syms.put("Iowa", "IA");
+    syms.put("Kansas", "KS");
+    syms.put("Kentucky", "KY");
+    syms.put("Louisiana", "LA");
+    syms.put("Maine", "ME");
+    syms.put("Maryland", "MD");
+    syms.put("Massachusetts", "MA");
+    syms.put("Michigan", "MI");
+    syms.put("Minnesota", "MN");
+    syms.put("Mississippi", "MS");
+    syms.put("Missouri", "MO");
+    syms.put("Montana", "MT");
+    syms.put("Nebraska", "NE");
+    syms.put("Nevada", "NV");
+    syms.put("Ohio", "OH");
+    syms.put("Oklahoma", "OK");
+    syms.put("Oregon", "OR");
+    syms.put("Pennsylvania", "PA");
+    syms.put("Tennessee", "TN");
+    syms.put("Texas", "TX");
+    syms.put("Utah", "UT");
+    syms.put("Vermont", "VT");
+    syms.put("Virginia", "VA");
+    syms.put("Washington", "WA");
+    syms.put("Wisconsin", "WI");
+    syms.put("Wyoming", "WY");
+
+    syms.put("New Hampshire", "NH");
+    syms.put("New Jersey", "NJ");
+    syms.put("New Mexico", "NM");
+    syms.put("New York", "NY");
+    syms.put("North Carolina", "NC");
+    syms.put("North Dakota", "ND");
+    syms.put("Rhode Island", "RI");
+    syms.put("South Carolina", "SC");
+    syms.put("South Dakota", "SD");
+    syms.put("West Virginia", "WV");
   }
 
   final static private Logger LOG
@@ -51,13 +93,9 @@ public class RegionBean {
   @PostConstruct
   public void postConstruct() {
 
-    LOG.info("Start...");
-    LOG.info("DataBean: " + dataBean);
-
     Map<String, String> params = FacesContext.getCurrentInstance().
         getExternalContext().getRequestParameterMap();
-    String states = params.get("states");
-    System.out.println("states = " + states);
+    final String states = params.get("states");
 
     regionGraph = new LineChartModel();
     regionGraph.setTitle("Cumulative Cases by State");
@@ -71,38 +109,31 @@ public class RegionBean {
     yAxis.setLabel("# Cases");
     yAxis.setMin(0);
 
-    Map<String, List<String>> data;
+    List<LineChartSeries> chartSeriesCollection;
 
-    Collection<LineChartSeries> chartSeriesCollection =
-        dataBean.getLineChartSeries();
-
+    /*
+     * By default, only show top 15 States.
+     */
     if (states == null) {
-      chartSeriesCollection = chartSeriesCollection.stream()
+      chartSeriesCollection = dataBean.getLineChartSeries()
           .limit(15)
+          .collect(Collectors.toList());
+    } else {
+      // Convert to uppercase and final for lambda
+      final String states2 = states.toUpperCase();
+      chartSeriesCollection = dataBean.getLineChartSeries()
+          .filter(cs -> {
+            String symbol = syms.get(cs.getLabel());
+            return symbol != null && states2.contains(symbol);
+          })
           .collect(Collectors.toList());
     }
 
     for (LineChartSeries series : chartSeriesCollection) {
-
-      if (states != null) {
-        Optional<String> match = Arrays.stream(states.toUpperCase().split(","))
-            .map(sym -> syms.get(sym))
-            .filter(name -> name != null)
-            .filter(name -> name.equals(series.getLabel()))
-            .findAny();
-
-        if (match.isPresent()) {
-          regionGraph.addSeries(series);
-          LOG.info("Adding: " + series.getLabel());
-        }
-      } else {
-        regionGraph.addSeries(series);
-      }
-
+      regionGraph.addSeries(series);
     }
 
   }
-
 
   public LineChartModel getGraph() {
     return regionGraph;

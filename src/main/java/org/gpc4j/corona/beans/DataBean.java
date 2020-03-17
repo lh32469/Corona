@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 @Named
 public class DataBean implements Serializable {
 
-  private Collection<LineChartSeries> lineChartSeries;
+  private List<LineChartSeries> lineChartSeries;
 
   @Value("${corona.data.repo}")
   String repoDir;
@@ -37,8 +37,8 @@ public class DataBean implements Serializable {
     }
   }
 
-  public Collection<LineChartSeries> getLineChartSeries() {
-    return lineChartSeries;
+  public Stream<LineChartSeries> getLineChartSeries() {
+    return lineChartSeries.parallelStream();
   }
 
   public Map<String, List<String>> loadData() throws IOException {
@@ -76,7 +76,7 @@ public class DataBean implements Serializable {
   }
 
 
-  public Collection<LineChartSeries> processData(Map<String, List<String>> data) {
+  public List<LineChartSeries> processData(Map<String, List<String>> data) {
 
     Map<String, LineChartSeries> chartSeriesMap = new HashMap<>();
 
