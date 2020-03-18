@@ -156,7 +156,11 @@ public class RegionBean {
     } else {
       chartSeries
           .filter(series -> {
-            String symbol = syms.get(series.getLabel());
+            // Split off just the State name, not the value.
+            String symbol = syms.get(series
+                .getLabel()
+                .split("\\(")[0]
+                .trim());
             return symbol != null && states.contains(symbol);
           })
           .forEachOrdered(chart::addSeries);

@@ -16,6 +16,8 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,8 +30,53 @@ public class DataBean implements Serializable {
   @Value("${corona.data.repo}")
   String repoDir;
 
-  final static private Logger LOG
-      = LoggerFactory.getLogger(DataBean.class);
+  static Logger LOG = LoggerFactory.getLogger(DataBean.class);
+
+  /**
+   * Update LineChartSeries to include last value of
+   * the series in the Label.
+   */
+  private static Consumer<LineChartSeries> updateLabel() {
+    return series -> {
+      Object[] array = series.getData().values().toArray();
+      Object last = array[array.length - 1];
+      series.setLabel(series.getLabel() + " (" + last + ")");
+    };
+  }
+
+  /**
+   * Get the total number of cumulative cases from the CSVRecord.
+   */
+  static final Function<CSVRecord, Integer> getCumulative =
+      record -> Integer.parseInt(record.get(3));
+
+  /**
+   * Get the number of currently active cases from the CSVRecord.
+   */
+  static final Function<CSVRecord, Integer> getActive =
+      record -> {
+        int confirmed = 0;
+        int deaths = 0;
+        int recovered = 0;
+
+        try {
+          confirmed = Integer.parseInt(record.get(3));
+        } catch (NumberFormatException ex) {
+          LOG.warn(ex + "\n" + record);
+        }
+        try {
+          deaths = Integer.parseInt(record.get(4));
+        } catch (NumberFormatException ex) {
+          LOG.warn(ex + "\n" + record);
+        }
+        try {
+          recovered = Integer.parseInt(record.get(5));
+        } catch (NumberFormatException ex) {
+          LOG.warn(ex + "\n" + record);
+        }
+
+        return confirmed - deaths - recovered;
+      };
 
 
   @PostConstruct
@@ -38,8 +85,12 @@ public class DataBean implements Serializable {
     try {
 
       final Map<String, List<CSVRecord>> data = loadData();
-      active = processActive(data);
-      cumulative = processCumulative(data);
+
+      active = processData(data, getActive);
+      active.forEach(updateLabel());
+
+      cumulative = processData(data, getCumulative);
+      cumulative.forEach(updateLabel());
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -64,25 +115,25 @@ public class DataBean implements Serializable {
     files
         .filter(f -> f.toString().endsWith(".csv"))
         .forEach(f -> {
-      try {
+          try {
 
-        FileReader reader = new FileReader(f.toFile());
-        CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
-        List<CSVRecord> records = parser.getRecords().parallelStream()
-            .filter(r -> r.size() > 3)
-            .filter(r -> "US".equals(r.get(1)))
-            .filter(r -> r.get(2).startsWith("2020"))
-            .filter(r -> !r.get(0).contains(","))
-            .collect(Collectors.toList());
+            FileReader reader = new FileReader(f.toFile());
+            CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
+            List<CSVRecord> records = parser.getRecords().parallelStream()
+                .filter(r -> r.size() > 3)
+                .filter(r -> "US".equals(r.get(1)))
+                .filter(r -> r.get(2).startsWith("2020"))
+                .filter(r -> !r.get(0).contains(","))
+                .collect(Collectors.toList());
 
-        if (!records.isEmpty()) {
-          data.put(f.getFileName().toString(), records);
-        }
+            if (!records.isEmpty()) {
+              data.put(f.getFileName().toString(), records);
+            }
 
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    });
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        });
 
     LOG.info("Loaded " + data.size() + " files");
 
@@ -90,7 +141,9 @@ public class DataBean implements Serializable {
   }
 
 
-  public List<LineChartSeries> processCumulative(Map<String, List<CSVRecord>> data) {
+  List<LineChartSeries> processData(
+      Map<String, List<CSVRecord>> data,
+      Function<CSVRecord, Integer> function) {
 
     Map<String, LineChartSeries> chartSeriesMap = new HashMap<>();
 
@@ -107,63 +160,13 @@ public class DataBean implements Serializable {
           chartSeriesMap.put(stateName, stateSeries);
         }
 
-        stateSeries.set(index, Integer.parseInt(stateRecord.get(3)));
+        stateSeries.set(index, function.apply(stateRecord));
       }
 
       index++;
     }
 
-    LOG.info("Added " + chartSeriesMap.values().size() + " cumulative states.");
-
-    return sortCharts(chartSeriesMap.values());
-  }
-
-
-  public List<LineChartSeries> processActive(Map<String, List<CSVRecord>> data) {
-
-    Map<String, LineChartSeries> chartSeriesMap = new HashMap<>();
-
-    int index = 0;
-
-    for (String day : data.keySet()) {
-      List<CSVRecord> dayData = data.get(day);
-      for (CSVRecord stateRecord : dayData) {
-
-        final String stateName = stateRecord.get(0);
-        LineChartSeries stateSeries = chartSeriesMap.get(stateName);
-        if (stateSeries == null) {
-          stateSeries = new LineChartSeries();
-          stateSeries.setLabel(stateName);
-          chartSeriesMap.put(stateName, stateSeries);
-        }
-
-        int confirmed = 0;
-        int deaths = 0;
-        int recovered = 0;
-
-        try {
-          confirmed = Integer.parseInt(stateRecord.get(3));
-        } catch (NumberFormatException ex) {
-          LOG.info(ex + "\n" + stateRecord);
-        }
-        try {
-          deaths = Integer.parseInt(stateRecord.get(4));
-        } catch (NumberFormatException ex) {
-          LOG.info(ex + "\n" + stateRecord);
-        }
-        try {
-          recovered = Integer.parseInt(stateRecord.get(5));
-        } catch (NumberFormatException ex) {
-          LOG.info(ex + "\n" + stateRecord);
-        }
-
-        stateSeries.set(index, confirmed - deaths - recovered);
-      }
-
-      index++;
-    }
-
-    LOG.info("Added " + chartSeriesMap.values().size() + " active states.");
+    LOG.info("Added " + chartSeriesMap.values().size() + " states.");
 
     return sortCharts(chartSeriesMap.values());
   }
