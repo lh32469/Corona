@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -106,6 +105,10 @@ public class DataBean implements Serializable {
     return active.parallelStream();
   }
 
+  /**
+   * Load CSV files for each day into a Map of file names to
+   * CVSRecords for that day's data contained in the file.
+   */
   public Map<String, List<CSVRecord>> loadData() throws IOException {
 
     LOG.info("Loading data from: " + repoDir);
@@ -141,7 +144,12 @@ public class DataBean implements Serializable {
     return data;
   }
 
-
+  /**
+   * Process loaded data Map of CSV data for each day and return
+   * a List of LineChartSeries; one for each State.  The Function
+   * passed in is applied to CVSRecord to get the appropriate value
+   * for that entry in the LineChartSeries.
+   */
   List<LineChartSeries> processData(
       Map<String, List<CSVRecord>> data,
       Function<CSVRecord, Integer> function) {
@@ -149,6 +157,8 @@ public class DataBean implements Serializable {
     Map<String, LineChartSeries> chartSeriesMap = new HashMap<>();
 
     for (String day : data.keySet()) {
+      final String[] array = day.split("-");
+      final String xValue = array[0] + "/" + array[1];
       List<CSVRecord> dayData = data.get(day);
       for (CSVRecord stateRecord : dayData) {
 
@@ -160,11 +170,7 @@ public class DataBean implements Serializable {
           chartSeriesMap.put(stateName, stateSeries);
         }
 
-        LocalDateTime date = LocalDateTime.parse(stateRecord.get(2));
-
-        stateSeries.set(
-            date.getMonthValue() + "/" + date.getDayOfMonth(),
-            function.apply(stateRecord)
+        stateSeries.set(xValue, function.apply(stateRecord)
         );
       }
 
