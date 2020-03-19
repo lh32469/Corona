@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -147,7 +148,6 @@ public class DataBean implements Serializable {
 
     Map<String, LineChartSeries> chartSeriesMap = new HashMap<>();
 
-    int index = 0;
     for (String day : data.keySet()) {
       List<CSVRecord> dayData = data.get(day);
       for (CSVRecord stateRecord : dayData) {
@@ -160,10 +160,14 @@ public class DataBean implements Serializable {
           chartSeriesMap.put(stateName, stateSeries);
         }
 
-        stateSeries.set(index, function.apply(stateRecord));
+        LocalDateTime date = LocalDateTime.parse(stateRecord.get(2));
+
+        stateSeries.set(
+            date.getMonthValue() + "/" + date.getDayOfMonth(),
+            function.apply(stateRecord)
+        );
       }
 
-      index++;
     }
 
     LOG.info("Added " + chartSeriesMap.values().size() + " states.");

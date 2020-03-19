@@ -1,9 +1,6 @@
 package org.gpc4j.corona.beans;
 
-import org.primefaces.model.chart.Axis;
-import org.primefaces.model.chart.AxisType;
-import org.primefaces.model.chart.LineChartModel;
-import org.primefaces.model.chart.LineChartSeries;
+import org.primefaces.model.chart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -173,10 +170,10 @@ public class RegionBean {
     LineChartModel chart = new LineChartModel();
     chart.setTitle(title);
     chart.setLegendPosition("n");
+    chart.setShowPointLabels(true);
+    chart.setShowDatatip(true);
 
-    Axis xAxis = chart.getAxis(AxisType.X);
-    xAxis.setLabel("# Days");
-    xAxis.setMin(14);
+    chart.getAxes().put(AxisType.X, new CategoryAxis("Days"));
 
     Axis yAxis = chart.getAxis(AxisType.Y);
     yAxis.setLabel("# Cases");
