@@ -176,21 +176,13 @@ public class DataBean implements Serializable {
     List<LineChartSeries> sorted = chartSeries.stream()
         .sorted((s1, s2) -> {
 
-          int s1Max = s1.getData()
-              .values()
-              .stream()
-              .mapToInt(i -> i.intValue())
-              .max()
-              .getAsInt();
+          Object[] array = s1.getData().values().toArray();
+          int s1M = Integer.parseInt(array[array.length - 1].toString());
 
-          int s2Max = s2.getData()
-              .values()
-              .stream()
-              .mapToInt(i -> i.intValue())
-              .max()
-              .getAsInt();
+          array = s2.getData().values().toArray();
+          int s2M = Integer.parseInt(array[array.length - 1].toString());
 
-          return s2Max - s1Max;
+          return s2M - s1M;
         })
         .collect(Collectors.toList());
 
