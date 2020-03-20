@@ -2,6 +2,8 @@
 
 Spring Boot JSF App for viewing data.  
 
+Running here:  http://www.gpc4j.org/corona
+
 Takes Daily data from this repo:
 
     https://github.com/CSSEGISandData/COVID-19
@@ -14,22 +16,12 @@ Build:
 
 Run:
 
+    $ git clone https://github.com/CSSEGISandData/COVID-19 COVID
+
     $ java -jar target/Corona-1.0.0.jar
+ 
+Access local copy:
 
-Access via this path for top 10 states:
-
-Cumulative: http://www.gpc4j.org/corona/region.xhtml
-
-Active: http://www.gpc4j.org/corona/active.xhtml
-
-Deaths: http://www.gpc4j.org/corona/deaths.xhtml
-
-Or access via this path for specific states:
-
-   http://www.gpc4j.org/corona/region.xhtml?states=or,wa,ca
-
-   http://www.gpc4j.org/corona/active.xhtml?states=tx,mi
-
-   http://www.gpc4j.org/corona/deaths.xhtml?states=wa,ca,ny
+    http://localhost:8080/corona
 
 
