@@ -22,9 +22,14 @@ Cumulative: http://www.gpc4j.org/corona/region.xhtml
 
 Active: http://www.gpc4j.org/corona/active.xhtml
 
+Deaths: http://www.gpc4j.org/corona/deaths.xhtml
+
 Or access via this path for specific states:
 
    http://www.gpc4j.org/corona/region.xhtml?states=or,wa,ca
-   http://www.gpc4j.org/corona/active.xhtml?states=or,wa,ca
+
+   http://www.gpc4j.org/corona/active.xhtml?states=tx,mi
+
+   http://www.gpc4j.org/corona/deaths.xhtml?states=wa,ca,ny
 
 

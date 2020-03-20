@@ -23,6 +23,8 @@ import java.util.stream.Stream;
 public class RegionBean {
 
   LineChartModel activeGraph;
+  LineChartModel deathsGraph;
+  LineChartModel recoveredGraph;
   LineChartModel cumulativeGraph;
 
   static final Map<String, String> syms = new HashMap<>();
@@ -134,6 +136,28 @@ public class RegionBean {
     processGraph(activeGraph, dataBean.getActive());
 
     return activeGraph;
+  }
+
+  public LineChartModel getDeaths() {
+    if (deathsGraph != null) {
+      return deathsGraph;
+    }
+
+    deathsGraph = createChart("Deaths by State");
+    processGraph(deathsGraph, dataBean.getDeaths());
+
+    return deathsGraph;
+  }
+
+  public LineChartModel getRecovered() {
+    if (recoveredGraph != null) {
+      return recoveredGraph;
+    }
+
+    recoveredGraph = createChart("Recovered Cases by State");
+    processGraph(recoveredGraph, dataBean.getRecovered());
+
+    return recoveredGraph;
   }
 
   /**

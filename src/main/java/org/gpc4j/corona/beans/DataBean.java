@@ -26,6 +26,8 @@ public class DataBean implements Serializable {
 
   private List<LineChartSeries> cumulative;
   private List<LineChartSeries> active;
+  private List<LineChartSeries> recovered;
+  private List<LineChartSeries> deaths;
 
   @Value("${corona.data.repo}")
   String repoDir;
@@ -51,29 +53,35 @@ public class DataBean implements Serializable {
       record -> Integer.parseInt(record.get(3));
 
   /**
+   * Get the total number of deaths from the CSVRecord.
+   */
+  static final Function<CSVRecord, Integer> getDeaths =
+      record -> Integer.parseInt(record.get(4));
+
+  /**
+   * Get the total number of recovered cases from the CSVRecord.
+   */
+  static final Function<CSVRecord, Integer> getRecovered =
+      record -> {
+        // Ignore entire region entries
+        if (record.get(0).equals(record.get(1))) {
+          return 0;
+        }
+        int recovered = Integer.parseInt(record.get(5));
+        if (recovered > 0) {
+          System.out.println("recovered = " + record);
+        }
+        return Integer.parseInt(record.get(5));
+      };
+
+  /**
    * Get the number of currently active cases from the CSVRecord.
    */
   static final Function<CSVRecord, Integer> getActive =
       record -> {
-        int confirmed = 0;
-        int deaths = 0;
-        int recovered = 0;
-
-        try {
-          confirmed = Integer.parseInt(record.get(3));
-        } catch (NumberFormatException ex) {
-          LOG.warn(ex + "\n" + record);
-        }
-        try {
-          deaths = Integer.parseInt(record.get(4));
-        } catch (NumberFormatException ex) {
-          LOG.warn(ex + "\n" + record);
-        }
-        try {
-          recovered = Integer.parseInt(record.get(5));
-        } catch (NumberFormatException ex) {
-          LOG.warn(ex + "\n" + record);
-        }
+        int confirmed = Integer.parseInt(record.get(3));
+        int deaths = Integer.parseInt(record.get(4));
+        int recovered = Integer.parseInt(record.get(5));
 
         return confirmed - deaths - recovered;
       };
@@ -92,6 +100,12 @@ public class DataBean implements Serializable {
       cumulative = processData(data, getCumulative);
       cumulative.forEach(updateLabel());
 
+      recovered = processData(data, getRecovered);
+      recovered.forEach(updateLabel());
+
+      deaths = processData(data, getDeaths);
+      deaths.forEach(updateLabel());
+
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -103,6 +117,14 @@ public class DataBean implements Serializable {
 
   public Stream<LineChartSeries> getActive() {
     return active.parallelStream();
+  }
+
+  public Stream<LineChartSeries> getRecovered() {
+    return recovered.parallelStream();
+  }
+
+  public Stream<LineChartSeries> getDeaths() {
+    return deaths.parallelStream();
   }
 
   /**
