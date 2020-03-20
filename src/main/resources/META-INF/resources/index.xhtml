@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+>
+
+<h:head>
+  <title>Corona App</title>
+  <meta name="description"
+        content="Graphs of Cases in US States by day"/>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script src="https://www.googletagmanager.com/gtag/js?id=UA-160999861-1"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-160999861-1');
+  </script>
+
+</h:head>
+<h:body>
+
+  <h:form id="iForm">
+    <br/><br/>
+    <p:chart type="line"
+             model="#{region.cumulative}"
+             style="width:1250px;height:900px;border: 20px"/>
+    <br/><br/>
+    <p:chart type="line"
+             model="#{region.active}"
+             style="width:1250px;height:900px;border: 20px"/>
+    <br/><br/>
+    <p:chart type="line"
+             model="#{region.deaths}"
+             style="width:1250px;height:900px;border: 20px"/>
+    <br/>
+    <h3>
+      <p>
+        To access specific states append the states query parameter to
+        the end of the URL and add the states symbols. </p>
+      <p>
+        Examples:
+      </p>
+      <p>
+        <a href="http://localhost:8080/corona/index.xhtml?states=or">
+          http://localhost:8080/corona/index.xhtml?states=or
+        </a>
+      </p>
+      <p>
+        <a href="http://localhost:8080/corona/index.xhtml?states=ca,wa,ny">
+          http://localhost:8080/corona/index.xhtml?states=ca,wa,ny
+        </a>
+      </p>
+    </h3>
+  </h:form>
+</h:body>
+</html>

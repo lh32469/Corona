@@ -67,10 +67,6 @@ public class DataBean implements Serializable {
         if (record.get(0).equals(record.get(1))) {
           return 0;
         }
-        int recovered = Integer.parseInt(record.get(5));
-        if (recovered > 0) {
-          System.out.println("recovered = " + record);
-        }
         return Integer.parseInt(record.get(5));
       };
 

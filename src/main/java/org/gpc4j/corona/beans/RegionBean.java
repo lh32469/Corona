@@ -170,7 +170,7 @@ public class RegionBean {
 
     if (states == null) {
       // By default, only show top 'maxStates' number of States.
-      chart.setTitle(chart.getTitle() + " (Top " + maxStates + ")");
+      chart.setTitle(chart.getTitle() + " (Highest " + maxStates + ")");
       chartSeries
           .limit(maxStates)
           .forEachOrdered(chart::addSeries);
