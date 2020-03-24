@@ -1,5 +1,6 @@
 package org.gpc4j.corona.beans;
 
+import org.gpc4j.corona.States;
 import org.primefaces.model.chart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +11,6 @@ import javax.annotation.PostConstruct;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -27,62 +27,6 @@ public class RegionBean {
   LineChartModel recoveredGraph;
   LineChartModel cumulativeGraph;
 
-  static final Map<String, String> syms = new HashMap<>();
-
-  static {
-
-    syms.put("Alabama", "AL");
-    syms.put("Alaska", "AK");
-    syms.put("Arizona", "AZ");
-    syms.put("Arkansas", "AR");
-    syms.put("California", "CA");
-    syms.put("Colorado", "CO");
-    syms.put("Connecticut", "CT");
-    syms.put("Delaware", "DE");
-    syms.put("Florida", "FL");
-    syms.put("Georgia", "GA");
-    syms.put("Hawaii", "HI");
-    syms.put("Idaho", "ID");
-    syms.put("Illinois", "IL");
-    syms.put("Indiana", "IN");
-    syms.put("Iowa", "IA");
-    syms.put("Kansas", "KS");
-    syms.put("Kentucky", "KY");
-    syms.put("Louisiana", "LA");
-    syms.put("Maine", "ME");
-    syms.put("Maryland", "MD");
-    syms.put("Massachusetts", "MA");
-    syms.put("Michigan", "MI");
-    syms.put("Minnesota", "MN");
-    syms.put("Mississippi", "MS");
-    syms.put("Missouri", "MO");
-    syms.put("Montana", "MT");
-    syms.put("Nebraska", "NE");
-    syms.put("Nevada", "NV");
-    syms.put("Ohio", "OH");
-    syms.put("Oklahoma", "OK");
-    syms.put("Oregon", "OR");
-    syms.put("Pennsylvania", "PA");
-    syms.put("Tennessee", "TN");
-    syms.put("Texas", "TX");
-    syms.put("Utah", "UT");
-    syms.put("Vermont", "VT");
-    syms.put("Virginia", "VA");
-    syms.put("Washington", "WA");
-    syms.put("Wisconsin", "WI");
-    syms.put("Wyoming", "WY");
-
-    syms.put("New Hampshire", "NH");
-    syms.put("New Jersey", "NJ");
-    syms.put("New Mexico", "NM");
-    syms.put("New York", "NY");
-    syms.put("North Carolina", "NC");
-    syms.put("North Dakota", "ND");
-    syms.put("Rhode Island", "RI");
-    syms.put("South Carolina", "SC");
-    syms.put("South Dakota", "SD");
-    syms.put("West Virginia", "WV");
-  }
 
   final static private Logger LOG
       = LoggerFactory.getLogger(RegionBean.class);
@@ -178,7 +122,7 @@ public class RegionBean {
       chartSeries
           .filter(series -> {
             // Split off just the State name, not the value.
-            String symbol = syms.get(series
+            String symbol = States.SYMBOLS.get(series
                 .getLabel()
                 .split("\\(")[0]
                 .trim());
