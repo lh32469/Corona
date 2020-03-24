@@ -27,9 +27,6 @@ pipeline {
 
 
     stage('Build') {
-      environment {
-        JAVA_HOME = '/usr/local/openjdk-11'
-      }
       agent {
         docker {
           reuseNode true
