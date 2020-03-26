@@ -48,6 +48,11 @@ public class RegionBean {
    */
   private String states;
 
+  /**
+   * Value of QueryParam for explicitly exluding States to display.
+   */
+  private String exclude;
+
   @PostConstruct
   public void postConstruct() {
 
@@ -57,6 +62,11 @@ public class RegionBean {
     states = params.get("states");
     if (states != null) {
       states = states.toUpperCase();
+    }
+
+    exclude = params.get("exclude");
+    if (exclude != null) {
+      exclude = exclude.toUpperCase();
     }
   }
 
@@ -112,13 +122,20 @@ public class RegionBean {
       final LineChartModel chart,
       final Stream<LineChartSeries> chartSeries) {
 
-    if (states == null) {
-      // By default, only show top 'maxStates' number of States.
-      chart.setTitle(chart.getTitle() + " (Highest " + maxStates + ")");
+    if (exclude != null) {
+      chart.setTitle(chart.getTitle() + " (Highest " + maxStates + ", excluding: " + exclude + ")");
       chartSeries
+          .filter(series -> {
+            // Split off just the State name, not the value.
+            String symbol = States.SYMBOLS.get(series
+                .getLabel()
+                .split("\\(")[0]
+                .trim());
+            return symbol != null && !exclude.contains(symbol);
+          })
           .limit(maxStates)
           .forEachOrdered(chart::addSeries);
-    } else {
+    } else if (states != null) {
       chartSeries
           .filter(series -> {
             // Split off just the State name, not the value.
@@ -129,7 +146,14 @@ public class RegionBean {
             return symbol != null && states.contains(symbol);
           })
           .forEachOrdered(chart::addSeries);
+    } else {
+      // By default, only show top 'maxStates' number of States.
+      chart.setTitle(chart.getTitle() + " (Highest " + maxStates + ")");
+      chartSeries
+          .limit(maxStates)
+          .forEachOrdered(chart::addSeries);
     }
+
   }
 
 
