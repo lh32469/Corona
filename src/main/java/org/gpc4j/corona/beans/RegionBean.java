@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 
 import javax.annotation.PostConstruct;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -56,8 +58,14 @@ public class RegionBean {
   @PostConstruct
   public void postConstruct() {
 
-    Map<String, String> params = FacesContext.getCurrentInstance().
-        getExternalContext().getRequestParameterMap();
+    ExternalContext ctxt =
+        FacesContext.getCurrentInstance().getExternalContext();
+
+    HttpServletRequest request = (HttpServletRequest) ctxt.getRequest();
+    Map<String, String> params = ctxt.getRequestParameterMap();
+
+    LOG.info("RemoteAddr: " + request.getRemoteAddr() + " => "
+        + request.getRequestURI() + "?" + params);
 
     states = params.get("states");
     if (states != null) {
