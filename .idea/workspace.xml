@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="af4e8d38-ff08-4fe8-90f4-8a939d574341" name="Default Changelist" comment="" />
+    <list default="true" id="af4e8d38-ff08-4fe8-90f4-8a939d574341" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Corona.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Corona.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/gpc4j/corona/beans/DataBean.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/gpc4j/corona/beans/DataBean.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/gpc4j/corona/beans/RegionBean.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/gpc4j/corona/beans/RegionBean.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/resources/index.xhtml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/resources/index.xhtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/resources/percapita.xhtml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/resources/percapita.xhtml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,6 +22,9 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="MavenImportPreferences">
     <option name="importingSettings">
       <MavenImportingSettings>
@@ -22,6 +33,9 @@
     </option>
   </component>
   <component name="ProjectId" id="1ZAcyzkyZkTrCel9owXTvPfLUJh" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -30,14 +44,27 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/resources/META-INF/resources" />
-    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Background" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/resources/META-INF/resources" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.DataBean">
+    <configuration name="DataBean" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.gpc4j.corona.beans.DataBean" />
+      <module name="Corona" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.gpc4j.corona.beans.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="RegionBean" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.gpc4j.corona.beans.RegionBean" />
       <module name="Corona" />
@@ -53,9 +80,13 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.DataBean" />
         <item itemvalue="Application.RegionBean" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="StructureViewFactory">
+    <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -71,33 +102,46 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="847" y="206" key="#com.intellij.ide.util.MemberChooser" timestamp="1584373070867">
+    <state x="480" y="376" key="#com.intellij.codeInsight.template.impl.EditVariableDialog" timestamp="1585518320323">
       <screen x="0" y="23" width="2048" height="1014" />
     </state>
-    <state x="847" y="206" key="#com.intellij.ide.util.MemberChooser/0.23.2048.1014@0.23.2048.1014" timestamp="1584373070867" />
-    <state width="1968" height="250" key="GridCell.Tab.0.bottom" timestamp="1584309791322">
+    <state x="480" y="376" key="#com.intellij.codeInsight.template.impl.EditVariableDialog/0.23.2048.1014@0.23.2048.1014" timestamp="1585518320323" />
+    <state x="847" y="206" key="#com.intellij.ide.util.MemberChooser" timestamp="1585507586291">
       <screen x="0" y="23" width="2048" height="1014" />
     </state>
-    <state width="1968" height="250" key="GridCell.Tab.0.bottom/0.23.2048.1014@0.23.2048.1014" timestamp="1584309791322" />
-    <state width="1968" height="250" key="GridCell.Tab.0.center" timestamp="1584309791321">
+    <state x="847" y="206" key="#com.intellij.ide.util.MemberChooser/0.23.2048.1014@0.23.2048.1014" timestamp="1585507586291" />
+    <state width="1955" height="223" key="GridCell.Tab.0.bottom" timestamp="1585499471068">
       <screen x="0" y="23" width="2048" height="1014" />
     </state>
-    <state width="1968" height="250" key="GridCell.Tab.0.center/0.23.2048.1014@0.23.2048.1014" timestamp="1584309791321" />
-    <state width="1968" height="250" key="GridCell.Tab.0.left" timestamp="1584309791320">
+    <state width="1955" height="223" key="GridCell.Tab.0.bottom/0.23.2048.1014@0.23.2048.1014" timestamp="1585499471068" />
+    <state width="1955" height="223" key="GridCell.Tab.0.center" timestamp="1585499471067">
       <screen x="0" y="23" width="2048" height="1014" />
     </state>
-    <state width="1968" height="250" key="GridCell.Tab.0.left/0.23.2048.1014@0.23.2048.1014" timestamp="1584309791320" />
-    <state width="1968" height="250" key="GridCell.Tab.0.right" timestamp="1584309791321">
+    <state width="1955" height="223" key="GridCell.Tab.0.center/0.23.2048.1014@0.23.2048.1014" timestamp="1585499471067" />
+    <state width="1955" height="223" key="GridCell.Tab.0.left" timestamp="1585499471067">
       <screen x="0" y="23" width="2048" height="1014" />
     </state>
-    <state width="1968" height="250" key="GridCell.Tab.0.right/0.23.2048.1014@0.23.2048.1014" timestamp="1584309791321" />
-    <state x="713" y="327" key="com.intellij.ide.util.TipDialog" timestamp="1584294636297">
+    <state width="1955" height="223" key="GridCell.Tab.0.left/0.23.2048.1014@0.23.2048.1014" timestamp="1585499471067" />
+    <state width="1955" height="223" key="GridCell.Tab.0.right" timestamp="1585499471068">
       <screen x="0" y="23" width="2048" height="1014" />
     </state>
-    <state x="713" y="327" key="com.intellij.ide.util.TipDialog/0.23.2048.1014@0.23.2048.1014" timestamp="1584294636297" />
-    <state x="699" y="231" key="search.everywhere.popup" timestamp="1584291358360">
+    <state width="1955" height="223" key="GridCell.Tab.0.right/0.23.2048.1014@0.23.2048.1014" timestamp="1585499471068" />
+    <state x="158" y="35" key="SettingsEditor" timestamp="1585697800186">
+      <screen x="0" y="23" width="1280" height="734" />
+    </state>
+    <state x="158" y="35" key="SettingsEditor/0.23.1280.734@0.23.1280.734" timestamp="1585697800186" />
+    <state x="252" y="167" key="SettingsEditor/0.23.2048.1014@0.23.2048.1014" timestamp="1585518444592" />
+    <state x="1367" y="510" key="com.intellij.ide.util.TipDialog" timestamp="1585517072723">
       <screen x="0" y="23" width="2048" height="1014" />
     </state>
-    <state x="699" y="231" key="search.everywhere.popup/0.23.2048.1014@0.23.2048.1014" timestamp="1584291358360" />
+    <state x="1367" y="510" key="com.intellij.ide.util.TipDialog/0.23.2048.1014@0.23.2048.1014" timestamp="1585517072723" />
+    <state x="726" y="111" key="refactoring.ChangeSignatureDialog" timestamp="1585510889075">
+      <screen x="0" y="23" width="2048" height="1014" />
+    </state>
+    <state x="726" y="111" key="refactoring.ChangeSignatureDialog/0.23.2048.1014@0.23.2048.1014" timestamp="1585510889075" />
+    <state x="699" y="231" width="670" height="676" key="search.everywhere.popup" timestamp="1585510627855">
+      <screen x="0" y="23" width="2048" height="1014" />
+    </state>
+    <state x="699" y="231" width="670" height="676" key="search.everywhere.popup/0.23.2048.1014@0.23.2048.1014" timestamp="1585510627855" />
   </component>
 </project>

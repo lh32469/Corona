@@ -1,11 +1,13 @@
 package org.gpc4j.corona.beans;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.gpc4j.corona.States;
 import org.gpc4j.corona.dto.StateDayEntry;
-import org.primefaces.model.chart.LineChartSeries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,42 +16,36 @@ import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Named
 public class DataBean implements Serializable {
 
-  private List<LineChartSeries> cumulative;
-  private List<LineChartSeries> active;
-  private List<LineChartSeries> recovered;
-  private List<LineChartSeries> deaths;
+//  private List<LineChartSeries> cumulative;
+//  private List<LineChartSeries> active;
+//  private List<LineChartSeries> recovered;
+//  private List<LineChartSeries> deaths;
+
+  /**
+   * Population for each State.
+   */
+  private ArrayNode statePopulation;
 
   @Value("${corona.data.repo}")
   String repoDir;
 
   static Logger LOG = LoggerFactory.getLogger(DataBean.class);
+  private List<StateDayEntry> entries;
 
-  /**
-   * Update LineChartSeries to include last value of
-   * the series in the Label.
-   */
-  private static Consumer<LineChartSeries> updateLabel() {
-    return series -> {
-      Object[] array = series.getData().values().toArray();
-      if (array.length > 0) {
-        Object last = array[array.length - 1];
-        series.setLabel(series.getLabel() + " (" + last + ")");
-      }
-    };
-  }
 
   /**
    * See if Record matches the State name provided in either
@@ -133,86 +129,134 @@ public class DataBean implements Serializable {
         return confirmed - deaths - recovered;
       };
 
+  public Stream<StateDayEntry> getEntries() {
+    return entries.parallelStream();
+  }
+
+  public StateDayEntry getEntry(final String day, final String state) {
+    return entries.stream()
+        .filter(e -> e.getFileName().equals(day))
+        .filter(e -> e.getName().equals(state))
+        .findAny().get();
+  }
+
+  public Set<String> getSortedDays() {
+
+    // TODO: Make this a field entry calculated once.
+
+    Set<String> days = entries.parallelStream()
+        .map(entry -> entry.getFileName())
+        .collect(Collectors.toSet());
+
+    // return sorted results
+    return new TreeSet<>(days);
+  }
 
   @PostConstruct
   public void postConstruct() {
     LOG.info("postConstruct");
 
-    cumulative = new LinkedList<>();
-    active = new LinkedList<>();
-    deaths = new LinkedList<>();
+//    cumulative = new LinkedList<>();
+//    active = new LinkedList<>();
+//    deaths = new LinkedList<>();
 
-    List<StateDayEntry> entries = null;
     try {
       entries = loadData();
+
+      // Load State population data
+      statePopulation = loadStatePopulationData();
+
     } catch (IOException e) {
       LOG.error(e.toString(), e);
       return;
     }
 
-    // Get days in list
-    Set<String> days = entries.parallelStream()
-        .map(entry -> entry.getFileName())
-        .collect(Collectors.toSet());
-
-    // Sort the results
-    days = new TreeSet<>(days);
-
-    // Collect data for each State and populate charts.
-    for (String stateName : States.SYMBOLS.keySet()) {
-
-      LineChartSeries stateCumulativeSeries = new LineChartSeries(stateName);
-      LineChartSeries stateActiveSeries = new LineChartSeries(stateName);
-      LineChartSeries stateDeathsSeries = new LineChartSeries(stateName);
-
-      cumulative.add(stateCumulativeSeries);
-      active.add(stateActiveSeries);
-      deaths.add(stateDeathsSeries);
-
-      for (String dailyReport : days) {
-        final String[] array = dailyReport.split("-");
-        final String xValue = array[0] + "/" + array[1];
-
-        // Get count for the State on the day
-        StateDayEntry entry = entries.parallelStream()
-            .filter(e -> e.getFileName().equals(dailyReport))
-            .filter(e -> e.getName().equals(stateName))
-            .findAny().get();
-
-        stateCumulativeSeries.set(xValue, entry.getCumulative());
-        stateActiveSeries.set(xValue, entry.getActive());
-        stateDeathsSeries.set(xValue, entry.getDeaths());
-      }
-
-    }
-
-    cumulative.forEach(updateLabel());
-    active.forEach(updateLabel());
-    deaths.forEach(updateLabel());
-
-    cumulative = sortCharts(cumulative);
-    active = sortCharts(active);
-    deaths = sortCharts(deaths);
-
-    LOG.info("Cumulative LineChartSeries: " + cumulative.size());
-    LOG.info("Active LineChartSeries: " + active.size());
-    LOG.info("Deaths LineChartSeries: " + deaths.size());
+//    // Get days in list
+//    Set<String> days = entries.parallelStream()
+//        .map(entry -> entry.getFileName())
+//        .collect(Collectors.toSet());
+//
+//    // Sort the results
+//    days = new TreeSet<>(days);
+//    // Collect data for each State and populate charts.
+//    for (String stateName : States.SYMBOLS.keySet()) {
+//
+//      LineChartSeries stateCumulativeSeries = new LineChartSeries(stateName);
+//      LineChartSeries stateActiveSeries = new LineChartSeries(stateName);
+//      LineChartSeries stateDeathsSeries = new LineChartSeries(stateName);
+//
+//      cumulative.add(stateCumulativeSeries);
+//      active.add(stateActiveSeries);
+//      deaths.add(stateDeathsSeries);
+//
+//      for (String dailyReport : days) {
+//        final String[] array = dailyReport.split("-");
+//        final String xValue = array[0] + "/" + array[1];
+//
+//        // Get count for the State on the day
+//        StateDayEntry entry = entries.parallelStream()
+//            .filter(e -> e.getFileName().equals(dailyReport))
+//            .filter(e -> e.getName().equals(stateName))
+//            .findAny().get();
+//
+//        stateCumulativeSeries.set(xValue, entry.getCumulative());
+//        stateActiveSeries.set(xValue, entry.getActive());
+//        stateDeathsSeries.set(xValue, entry.getDeaths());
+//      }
+//
+//    }
+//
+//    cumulative.forEach(updateLabel());
+//    active.forEach(updateLabel());
+//    deaths.forEach(updateLabel());
+//
+//    cumulative = sortCharts(cumulative);
+//    active = sortCharts(active);
+//    deaths = sortCharts(deaths);
+//
+//    LOG.info("Cumulative LineChartSeries: " + cumulative.size());
+//    LOG.info("Active LineChartSeries: " + active.size());
+//    LOG.info("Deaths LineChartSeries: " + deaths.size());
   }
 
-  public Stream<LineChartSeries> getCumulative() {
-    return cumulative.parallelStream();
+//  public Stream<LineChartSeries> getCumulative() {
+//    return cumulative.parallelStream();
+//  }
+//
+//  public Stream<LineChartSeries> getActive() {
+//    return active.parallelStream();
+//  }
+//
+//  public Stream<LineChartSeries> getRecovered() {
+//    return recovered.parallelStream();
+//  }
+//
+//  public Stream<LineChartSeries> getDeaths() {
+//    return deaths.parallelStream();
+//  }
+
+  /**
+   * Get the population for the State provided.
+   *
+   * @param state Examples: Michigan, Oregon
+   */
+  public int getPopulation(final String state) {
+
+    return StreamSupport.stream(statePopulation.spliterator(), false)
+        .filter(s -> s.get("State").asText().equals(state))
+        .map(s -> s.get("Pop2018").asInt())
+        .findAny()
+        .get();
   }
 
-  public Stream<LineChartSeries> getActive() {
-    return active.parallelStream();
-  }
+  ArrayNode loadStatePopulationData() throws IOException {
 
-  public Stream<LineChartSeries> getRecovered() {
-    return recovered.parallelStream();
-  }
+    ObjectMapper mapper = new ObjectMapper();
+    InputStream iStream = getClass().getResourceAsStream("/states.json");
+    JsonNode root = mapper.readTree(iStream);
+    ArrayNode data = (ArrayNode) root.get("data");
 
-  public Stream<LineChartSeries> getDeaths() {
-    return deaths.parallelStream();
+    return data;
   }
 
   /**
@@ -229,6 +273,7 @@ public class DataBean implements Serializable {
         .sorted()
         .collect(Collectors.toList());
 
+    // Only load last 14 days of data.  TODO: Make this a application param
     sorted = sorted.subList(sorted.size() - 14, sorted.size());
 
     sorted.forEach(file -> {
@@ -251,7 +296,7 @@ public class DataBean implements Serializable {
               .filter(r -> r.size() > 3)
               .filter(isState(state))
               .map(getCumulativeCount)
-              .reduce((a, b) -> a + b);
+              .reduce(Integer::sum);
 
           cumulativeCount.ifPresent(entry::setCumulative);
 
@@ -259,7 +304,7 @@ public class DataBean implements Serializable {
               .filter(r -> r.size() > 3)
               .filter(isState(state))
               .map(getActiveCount)
-              .reduce((a, b) -> a + b);
+              .reduce(Integer::sum);
 
           activeCount.ifPresent(entry::setActive);
 
@@ -267,7 +312,7 @@ public class DataBean implements Serializable {
               .filter(r -> r.size() > 3)
               .filter(isState(state))
               .map(getDeathsCount)
-              .reduce((a, b) -> a + b);
+              .reduce(Integer::sum);
 
           deathsCount.ifPresent(entry::setDeaths);
         }
@@ -281,33 +326,40 @@ public class DataBean implements Serializable {
     return entries;
   }
 
-  List<LineChartSeries> sortCharts(Collection<LineChartSeries> chartSeries) {
+//  List<LineChartSeries> sortCharts(Collection<LineChartSeries> chartSeries) {
+//
+//    List<LineChartSeries> sorted = chartSeries.stream()
+//        .sorted((s1, s2) -> {
+//
+//          Object[] array1 = s1.getData().values().toArray();
+//          Object[] array2 = s2.getData().values().toArray();
+//
+//          if (array1.length == 0 && array2.length > 0) {
+//            return -1;
+//          }
+//          if (array2.length == 0 && array1.length > 0) {
+//            return +1;
+//          }
+//          if (array2.length == 0 && array1.length == 0) {
+//            return 0;
+//          }
+//
+//          int s1M = Integer.parseInt(array1[array1.length - 1].toString());
+//          int s2M = Integer.parseInt(array2[array2.length - 1].toString());
+//
+//          return s2M - s1M;
+//        })
+//        .collect(Collectors.toList());
+//
+//    return sorted;
+//  }
 
-    List<LineChartSeries> sorted = chartSeries.stream()
-        .sorted((s1, s2) -> {
-
-          Object[] array1 = s1.getData().values().toArray();
-          Object[] array2 = s2.getData().values().toArray();
-
-          if (array1.length == 0 && array2.length > 0) {
-            return -1;
-          }
-          if (array2.length == 0 && array1.length > 0) {
-            return +1;
-          }
-          if (array2.length == 0 && array1.length == 0) {
-            return 0;
-          }
-
-          int s1M = Integer.parseInt(array1[array1.length - 1].toString());
-          int s2M = Integer.parseInt(array2[array2.length - 1].toString());
-
-          return s2M - s1M;
-        })
-        .collect(Collectors.toList());
-
-    return sorted;
+  public static void main(String[] args) throws IOException {
+    DataBean bean = new DataBean();
+    bean.repoDir = "COVID/csse_covid_19_data/csse_covid_19_daily_reports";
+    bean.postConstruct();
+//    bean.loadStatePopulationData();
+    int oregon = bean.getPopulation("Oregon");
+    System.out.println("oregon = " + oregon);
   }
-
-
 }

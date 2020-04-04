@@ -1,6 +1,7 @@
 package org.gpc4j.corona.beans;
 
 import org.gpc4j.corona.States;
+import org.gpc4j.corona.dto.StateDayEntry;
 import org.primefaces.model.chart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +14,12 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -28,7 +33,29 @@ public class RegionBean {
   LineChartModel deathsGraph;
   LineChartModel recoveredGraph;
   LineChartModel cumulativeGraph;
+  LineChartModel cumulativeGraphPerCapita;
+  LineChartModel activeGraphPerCapita;
+  LineChartModel deathsGraphPerCapita;
 
+  /**
+   * Get the active count from the StateDayEntry.
+   */
+  static final Function<StateDayEntry, Integer> getActive =
+      entry -> entry.getActive();
+
+  /**
+   * Update LineChartSeries to include last value of
+   * the series in the Label.
+   */
+  private static Consumer<? super ChartSeries> updateLabel() {
+    return series -> {
+      Object[] array = series.getData().values().toArray();
+      if (array.length > 0) {
+        Object last = array[array.length - 1];
+        series.setLabel(series.getLabel() + " (" + last + ")");
+      }
+    };
+  }
 
   final static private Logger LOG
       = LoggerFactory.getLogger(RegionBean.class);
@@ -58,11 +85,11 @@ public class RegionBean {
   @PostConstruct
   public void postConstruct() {
 
-    ExternalContext ctxt =
+    final ExternalContext exCtxt =
         FacesContext.getCurrentInstance().getExternalContext();
 
-    HttpServletRequest request = (HttpServletRequest) ctxt.getRequest();
-    Map<String, String> params = ctxt.getRequestParameterMap();
+    HttpServletRequest request = (HttpServletRequest) exCtxt.getRequest();
+    Map<String, String> params = exCtxt.getRequestParameterMap();
 
     LOG.info("RemoteAddr: " + request.getRemoteAddr() + " => "
         + request.getRequestURI() + "?" + params);
@@ -79,60 +106,117 @@ public class RegionBean {
   }
 
   public LineChartModel getCumulative() {
+
     if (cumulativeGraph != null) {
       return cumulativeGraph;
     }
 
-    cumulativeGraph = createChart("Cumulative Cases by State");
-    processGraph(cumulativeGraph, dataBean.getCumulative());
+    cumulativeGraph = getChart(entry -> entry.getCumulative());
+    cumulativeGraph.setTitle("Cumulative Cases by State");
+    processModel(cumulativeGraph);
 
     return cumulativeGraph;
   }
+
+
+  public LineChartModel getCumulativePC() {
+
+    if (cumulativeGraphPerCapita != null) {
+      return cumulativeGraphPerCapita;
+    }
+
+    cumulativeGraphPerCapita = getChart(entry -> {
+      final int capita = dataBean.getPopulation(entry.getName()) / 100000;
+      return entry.getCumulative() / capita;
+    });
+    cumulativeGraphPerCapita.setTitle("Active Cases by State, Per Capita");
+    processModel(cumulativeGraphPerCapita);
+
+    return cumulativeGraphPerCapita;
+  }
+
 
   public LineChartModel getActive() {
     if (activeGraph != null) {
       return activeGraph;
     }
 
-    activeGraph = createChart("Active Cases by State");
-    processGraph(activeGraph, dataBean.getActive());
+    activeGraph = getChart(e -> e.getActive());
+    activeGraph.setTitle("Active Cases by State");
+    processModel(activeGraph);
 
     return activeGraph;
   }
+
+  public LineChartModel getActivePC() {
+    if (activeGraphPerCapita != null) {
+      return activeGraphPerCapita;
+    }
+
+    activeGraphPerCapita = getChart(entry -> {
+      final int capita = dataBean.getPopulation(entry.getName()) / 100000;
+      return entry.getActive() / capita;
+    });
+    activeGraphPerCapita.setTitle("Active Cases by State, Per Capita");
+    processModel(activeGraphPerCapita);
+
+    return activeGraphPerCapita;
+  }
+
 
   public LineChartModel getDeaths() {
     if (deathsGraph != null) {
       return deathsGraph;
     }
 
-    deathsGraph = createChart("Deaths by State");
-    processGraph(deathsGraph, dataBean.getDeaths());
+    deathsGraph = getChart(e -> e.getDeaths());
+    deathsGraph.setTitle("Deaths by State");
+    processModel(deathsGraph);
 
     return deathsGraph;
   }
+
+
+  public LineChartModel getDeathsPC() {
+    if (deathsGraphPerCapita != null) {
+      return deathsGraphPerCapita;
+    }
+
+    deathsGraphPerCapita = getChart(entry -> {
+      final int capita = dataBean.getPopulation(entry.getName()) / 100000;
+      return entry.getDeaths() / capita;
+    });
+    deathsGraphPerCapita.setTitle("Deaths by State, Per Capita");
+    processModel(deathsGraphPerCapita);
+
+    return deathsGraphPerCapita;
+  }
+
 
   public LineChartModel getRecovered() {
     if (recoveredGraph != null) {
       return recoveredGraph;
     }
 
-    recoveredGraph = createChart("Recovered Cases by State");
-    processGraph(recoveredGraph, dataBean.getRecovered());
+    recoveredGraph = getChart(e -> e.getCumulative() - e.getDeaths());
+    recoveredGraph.setTitle("Recovered Cases by State");
+    processModel(recoveredGraph);
 
     return recoveredGraph;
   }
 
   /**
-   * Apply rules based on QueryParams to LineChartSeries
-   * provided and populate LineChartModel accordingly.
+   * Apply rules based on QueryParams to ChartSeries
+   * in the LineChartModel provided.
    */
-  void processGraph(
-      final LineChartModel chart,
-      final Stream<LineChartSeries> chartSeries) {
+  void processModel(final LineChartModel chart) {
+
+    List<ChartSeries> oldSeriesList = sortCharts(chart.getSeries());
+    chart.getSeries().clear();
 
     if (exclude != null) {
       chart.setTitle(chart.getTitle() + " (Highest " + maxStates + ", excluding: " + exclude + ")");
-      chartSeries
+      oldSeriesList.stream()
           .filter(series -> {
             // Split off just the State name, not the value.
             String symbol = States.SYMBOLS.get(series
@@ -142,9 +226,10 @@ public class RegionBean {
             return symbol != null && !exclude.contains(symbol);
           })
           .limit(maxStates)
+          .peek(updateLabel())
           .forEachOrdered(chart::addSeries);
     } else if (states != null) {
-      chartSeries
+      oldSeriesList.stream()
           .filter(series -> {
             // Split off just the State name, not the value.
             String symbol = States.SYMBOLS.get(series
@@ -153,22 +238,22 @@ public class RegionBean {
                 .trim());
             return symbol != null && states.contains(symbol);
           })
+          .peek(updateLabel())
           .forEachOrdered(chart::addSeries);
     } else {
       // By default, only show top 'maxStates' number of States.
       chart.setTitle(chart.getTitle() + " (Highest " + maxStates + ")");
-      chartSeries
+      oldSeriesList.stream()
           .limit(maxStates)
+          .peek(updateLabel())
           .forEachOrdered(chart::addSeries);
     }
-
   }
 
 
-  LineChartModel createChart(final String title) {
+  LineChartModel createChart() {
 
     LineChartModel chart = new LineChartModel();
-    chart.setTitle(title);
     chart.setLegendPosition("n");
     chart.setShowPointLabels(true);
     chart.setShowDatatip(true);
@@ -181,5 +266,64 @@ public class RegionBean {
 
     return chart;
   }
+
+
+  List<ChartSeries> sortCharts(Collection<ChartSeries> chartSeries) {
+
+    List<ChartSeries> sorted = chartSeries.stream()
+        .sorted((s1, s2) -> {
+
+          Object[] array1 = s1.getData().values().toArray();
+          Object[] array2 = s2.getData().values().toArray();
+
+          if (array1.length == 0 && array2.length > 0) {
+            return -1;
+          }
+          if (array2.length == 0 && array1.length > 0) {
+            return +1;
+          }
+          if (array2.length == 0 && array1.length == 0) {
+            return 0;
+          }
+
+          int s1M = Integer.parseInt(array1[array1.length - 1].toString());
+          int s2M = Integer.parseInt(array2[array2.length - 1].toString());
+
+          return s2M - s1M;
+        })
+        .collect(Collectors.toList());
+
+    return sorted;
+  }
+
+  /**
+   * Get the LineChartModel for all States using the Function provided
+   * to provide the value for each StateDayEntry.
+   */
+  public LineChartModel getChart(final Function<StateDayEntry, Integer> func) {
+
+    final LineChartModel chart = createChart();
+
+    // Collect data for each State and populate charts.
+    for (String stateName : States.SYMBOLS.keySet()) {
+      LineChartSeries series = new LineChartSeries(stateName);
+      chart.addSeries(series);
+
+      // Get population for calculating per 100,000 people.
+      final int capita = dataBean.getPopulation(stateName) / 100000;
+
+      for (String dailyReport : dataBean.getSortedDays()) {
+        final String[] array = dailyReport.split("-");
+        final String xValue = array[0] + "/" + array[1];
+
+        // Get count for the State on the day
+        StateDayEntry entry = dataBean.getEntry(dailyReport, stateName);
+        series.set(xValue, func.apply(entry));
+      }
+    }
+
+    return chart;
+  }
+
 
 }

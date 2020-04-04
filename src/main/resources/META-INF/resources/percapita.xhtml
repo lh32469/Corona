@@ -26,15 +26,15 @@
   <h:form id="iForm">
     <br/><br/>
     <p:chart type="line"
-             model="#{region.cumulative}"
+             model="#{region.cumulativePC}"
              style="width:1250px;height:900px;border: 20px"/>
     <br/><br/>
     <p:chart type="line"
-             model="#{region.active}"
+             model="#{region.activePC}"
              style="width:1250px;height:900px;border: 20px"/>
     <br/><br/>
     <p:chart type="line"
-             model="#{region.deaths}"
+             model="#{region.deathsPC}"
              style="width:1250px;height:900px;border: 20px"/>
     <br/>
     <h3>
@@ -66,7 +66,7 @@
         </a>
       </p>
       <p>
-       Per Capita page available here where query filter parameters work
+        Per Capita page available here where query filter parameters work
         the same as described above: </p>
       <p>
         <a href="http://www.gpc4j.org/corona/percapita.xhtml">

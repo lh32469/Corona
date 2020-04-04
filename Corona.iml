@@ -71,5 +71,6 @@
     <orderEntry type="library" name="Maven: io.micrometer:micrometer-core:1.1.7" level="project" />
     <orderEntry type="library" name="Maven: org.hdrhistogram:HdrHistogram:2.1.9" level="project" />
     <orderEntry type="library" name="Maven: org.latencyutils:LatencyUtils:2.0.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-csv:1.7" level="project" />
   </component>
 </module>
