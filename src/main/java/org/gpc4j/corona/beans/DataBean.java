@@ -46,6 +46,12 @@ public class DataBean implements Serializable {
   @Value("${corona.data.repo}")
   String repoDir;
 
+  /**
+   * Number of Days to display in charts.
+   */
+  @Value("${corona.days}")
+  int numDays;
+
   static Logger LOG = LoggerFactory.getLogger(DataBean.class);
 
 
@@ -211,8 +217,8 @@ public class DataBean implements Serializable {
         .sorted()
         .collect(Collectors.toList());
 
-    // Only load last 14 days of data.  TODO: Make this a application param
-    sorted = sorted.subList(sorted.size() - 14, sorted.size());
+    // Only load last 'numDays' days of data.
+    sorted = sorted.subList(sorted.size() - numDays, sorted.size());
 
     sorted.forEach(file -> {
 
