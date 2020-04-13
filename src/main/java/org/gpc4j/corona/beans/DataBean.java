@@ -60,8 +60,7 @@ public class DataBean implements Serializable {
    * CSVRecord format.
    */
   Predicate<CSVRecord> isState(String state) {
-    return record -> record.get(0).equals(state) ||
-        record.get(2).equals(state);
+    return record -> record.get("Province_State").equals(state);
   }
 
   /**
@@ -69,14 +68,10 @@ public class DataBean implements Serializable {
    */
   static final Function<CSVRecord, Integer> getCumulativeCount =
       record -> {
-        if (record.size() == 12) {
-          return Integer.parseInt(record.get(7));
-        } else {
-          try {
-            return Integer.parseInt(record.get(3));
-          } catch (NumberFormatException ex) {
-            return 0;
-          }
+        try {
+          return Integer.parseInt(record.get("Confirmed"));
+        } catch (NumberFormatException ex) {
+          return 0;
         }
       };
 
@@ -86,14 +81,10 @@ public class DataBean implements Serializable {
    */
   static final Function<CSVRecord, Integer> getDeathsCount =
       record -> {
-        if (record.size() == 12) {
-          return Integer.parseInt(record.get(8));
-        } else {
-          try {
-            return Integer.parseInt(record.get(4));
-          } catch (NumberFormatException ex) {
-            return 0;
-          }
+        try {
+          return Integer.parseInt(record.get("Deaths"));
+        } catch (NumberFormatException ex) {
+          return 0;
         }
       };
 
@@ -102,11 +93,11 @@ public class DataBean implements Serializable {
    */
   static final Function<CSVRecord, Integer> getRecovered =
       record -> {
-        // Ignore entire region entries
-        if (record.get(0).equals(record.get(1))) {
+        try {
+          return Integer.parseInt(record.get("Recovered"));
+        } catch (NumberFormatException ex) {
           return 0;
         }
-        return Integer.parseInt(record.get(5));
       };
 
   /**
@@ -114,25 +105,13 @@ public class DataBean implements Serializable {
    */
   static final Function<CSVRecord, Integer> getActiveCount =
       record -> {
+        int confirmed;
+        int deaths;
+        int recovered;
 
-        int confirmed = 0;
-        int deaths = 0;
-        int recovered = 0;
-
-        if (record.size() == 12) {
-          confirmed = Integer.parseInt(record.get(7));
-          deaths = Integer.parseInt(record.get(8));
-          recovered = Integer.parseInt(record.get(9));
-        } else {
-          // Pre 3-23 format
-          try {
-            confirmed = Integer.parseInt(record.get(3));
-            deaths = Integer.parseInt(record.get(4));
-            recovered = Integer.parseInt(record.get(5));
-          } catch (NumberFormatException ex) {
-
-          }
-        }
+        confirmed = Integer.parseInt(record.get("Confirmed"));
+        deaths = Integer.parseInt(record.get("Deaths"));
+        recovered = Integer.parseInt(record.get("Recovered"));
 
         return confirmed - deaths - recovered;
       };
@@ -210,6 +189,8 @@ public class DataBean implements Serializable {
    */
   public List<StateDayEntry> loadData() throws IOException {
 
+    System.out.println("Loading...");
+
     List<StateDayEntry> entries = new ArrayList<>(50);
 
     List<Path> sorted = Files.list(Path.of(repoDir))
@@ -219,13 +200,14 @@ public class DataBean implements Serializable {
 
     // Only load last 'numDays' days of data.
     sorted = sorted.subList(sorted.size() - numDays, sorted.size());
+    System.out.println("sorted = " + sorted);
 
     sorted.forEach(file -> {
 
       try {
 
         FileReader reader = new FileReader(file.toFile());
-        CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
+        CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
         List<CSVRecord> records = parser.getRecords();
 
         for (String state : States.SYMBOLS.keySet()) {
