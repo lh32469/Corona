@@ -50,6 +50,8 @@ pipeline {
         script {
           image = docker.build registry + ":$BUILD_NUMBER"
         }
+        // Cleanup previous images older than 12 hours
+        sh 'docker image prune -af --filter "label=app.name=corona" --filter "until=12h"'
       }
     }
 
