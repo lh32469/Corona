@@ -1,101 +1,20 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
->
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
 
-<h:head>
-  <title>Corona App</title>
-  <meta name="description"
-        content="Graphs of Cases in US States by day"/>
+<ui:composition template="template.xhtml">
 
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script src="https://www.googletagmanager.com/gtag/js?id=UA-160999861-1"></script>
-  <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'UA-160999861-1');
-  </script>
+    <ui:define name="center">
+        <div style="padding: 5px;">
+            <p:chart type="line"
+                     model="#{region.cumulative}"
+                     style="width:1200px;height:750px;border: 20px"/>
+        </div>
+    </ui:define>
 
-</h:head>
-<h:body>
+</ui:composition>
 
-  <h:form id="iForm">
-    <br/><br/>
-    <p:chart type="line"
-             model="#{region.cumulative}"
-             style="width:1250px;height:900px;border: 20px"/>
-    <br/><br/>
-    <p:chart type="line"
-             model="#{region.active}"
-             style="width:1250px;height:900px;border: 20px"/>
-    <br/><br/>
-    <p:chart type="line"
-             model="#{region.deaths}"
-             style="width:1250px;height:900px;border: 20px"/>
-    <br/>
-    <h3>
-      <p>
-        To access specific states append the 'states' query parameter to
-        the end of the URL and add the states symbols. </p>
-      <p>
-        Examples:
-      </p>
-      <p>
-        <a href="http://www.gpc4j.org/corona/index.xhtml?states=or,mi,tx,wi,ca,wa">
-          http://www.gpc4j.org/corona/index.xhtml?states=or,mi,tx,wi,ca,wa
-        </a>
-      </p>
-      <p>
-        <a href="http://www.gpc4j.org/corona/index.xhtml?states=or">
-          http://www.gpc4j.org/corona/index.xhtml?states=or
-        </a>
-      </p>
-      <p>
-        To exclude specific states append the 'exclude' query parameter to
-        the end of the URL and add the states symbols. </p>
-      <p>
-        Example:
-      </p>
-      <p>
-        <a href="http://www.gpc4j.org/corona/index.xhtml?exclude=ny,nj">
-          http://www.gpc4j.org/corona/index.xhtml?exclude=ny,nj
-        </a>
-      </p>
-      <p>
-       Per Capita page available here where query filter parameters work
-        the same as described above: </p>
-      <p>
-        <a href="http://www.gpc4j.org/corona/percapita.xhtml">
-          http://www.gpc4j.org/corona/percapita.xhtml
-        </a>
-      </p>
-      <p>
-        To access specific charts use the corresponding links below
-        and append the 'states' or 'exclude' query parameters to the
-        end of the URL as above if wanted. </p>
-      <p>
-        Examples:
-      </p>
-      <p>
-        <a href="http://www.gpc4j.org/corona/region.xhtml">
-          http://www.gpc4j.org/corona/region.xhtml
-        </a>
-      </p>
-      <p>
-        <a href="http://www.gpc4j.org/corona/active.xhtml">
-          http://www.gpc4j.org/corona/active.xhtml
-        </a>
-      </p>
-      <p>
-        <a href="http://www.gpc4j.org/corona/deaths.xhtml">
-          http://www.gpc4j.org/corona/deaths.xhtml
-        </a>
-      </p>
-    </h3>
-  </h:form>
-</h:body>
 </html>

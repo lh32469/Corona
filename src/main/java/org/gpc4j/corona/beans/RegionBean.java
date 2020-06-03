@@ -1,5 +1,6 @@
 package org.gpc4j.corona.beans;
 
+import org.apache.logging.log4j.util.Strings;
 import org.gpc4j.corona.States;
 import org.gpc4j.corona.dto.StateDayEntry;
 import org.primefaces.model.chart.*;
@@ -67,42 +68,40 @@ public class RegionBean {
   private DataBean dataBean;
 
   /**
+   * Session Bean containing user input.
+   */
+  @Inject
+  private SessionBean sBean;
+
+  /**
    * Default number of States to display if no QueryParam
    */
   @Value("${corona.states}")
   int maxStates;
 
   /**
-   * Value of QueryParam for explicitly selecting States to display.
+   * Value for explicitly selecting States to display.
    */
   private String states;
 
   /**
-   * Value of QueryParam for explicitly exluding States to display.
+   * Value for explicitly exluding States to display.
    */
   private String exclude;
 
   @PostConstruct
   public void postConstruct() {
 
-    final ExternalContext exCtxt =
-        FacesContext.getCurrentInstance().getExternalContext();
-
-    HttpServletRequest request = (HttpServletRequest) exCtxt.getRequest();
-    Map<String, String> params = exCtxt.getRequestParameterMap();
-
-    LOG.info("RemoteAddr: " + request.getRemoteAddr() + " => "
-        + request.getRequestURI() + "?" + params);
-
-    states = params.get("states");
+    states = sBean.getInclude();
     if (states != null) {
       states = states.toUpperCase();
     }
 
-    exclude = params.get("exclude");
+    exclude = sBean.getExclude();
     if (exclude != null) {
       exclude = exclude.toUpperCase();
     }
+
   }
 
   public LineChartModel getCumulative() {
@@ -214,7 +213,7 @@ public class RegionBean {
     List<ChartSeries> oldSeriesList = sortCharts(chart.getSeries());
     chart.getSeries().clear();
 
-    if (exclude != null) {
+    if (Strings.isNotBlank(exclude)) {
       chart.setTitle(chart.getTitle() + " (Highest " + maxStates + ", excluding: " + exclude + ")");
       oldSeriesList.stream()
           .filter(series -> {
@@ -228,7 +227,7 @@ public class RegionBean {
           .limit(maxStates)
           .peek(updateLabel())
           .forEachOrdered(chart::addSeries);
-    } else if (states != null) {
+    } else if (Strings.isNotEmpty(states)) {
       oldSeriesList.stream()
           .filter(series -> {
             // Split off just the State name, not the value.

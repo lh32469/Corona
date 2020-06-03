@@ -1,15 +1,16 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns:ui="http://java.sun.com/jsf/facelets"
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="template.xhtml">
 
     <ui:define name="center">
-            <p:chart type="line"
-                     model="#{region.deaths}"
-                     style="width:1200px;height:750px;border: 20px"/>
+        <p:chart type="line"
+                 model="#{region.cumulative}"
+                 style="width:1250px;height:900px;border: 20px"/>
     </ui:define>
 
 </ui:composition>
