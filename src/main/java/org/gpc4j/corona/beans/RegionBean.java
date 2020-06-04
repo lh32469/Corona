@@ -3,21 +3,22 @@ package org.gpc4j.corona.beans;
 import org.apache.logging.log4j.util.Strings;
 import org.gpc4j.corona.States;
 import org.gpc4j.corona.dto.StateDayEntry;
-import org.primefaces.model.chart.*;
+import org.primefaces.model.chart.Axis;
+import org.primefaces.model.chart.AxisType;
+import org.primefaces.model.chart.CategoryAxis;
+import org.primefaces.model.chart.ChartSeries;
+import org.primefaces.model.chart.LineChartModel;
+import org.primefaces.model.chart.LineChartSeries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 
 import javax.annotation.PostConstruct;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -204,6 +205,54 @@ public class RegionBean {
     return recoveredGraph;
   }
 
+  public LineChartModel getNewCaseRates() {
+
+    LineChartModel chart = getRates(entry -> {
+      final int capita = dataBean.getPopulation(entry.getName()) / 100000;
+      return entry.getCumulative()/capita;
+    });
+
+    chart.setTitle("Daily New Cases Per Capita by State");
+    processModel(chart);
+    return chart;
+  }
+
+  public LineChartModel getRates(final Function<StateDayEntry, Integer> func) {
+    LineChartModel chart = createChart();
+
+    // Collect data for each State and populate charts.
+    for (String stateName : States.SYMBOLS.keySet()) {
+      LineChartSeries series = new LineChartSeries(stateName);
+      chart.addSeries(series);
+
+      StateDayEntry previous = null;
+      int yesterdaysCount = 0;
+      int todaysCount = 0;
+
+      if ("New York".equals(stateName)) {
+        LOG.info("stateName = " + stateName);
+      }
+
+      for (String dailyReport : dataBean.getSortedDays()) {
+
+        final String[] array = dailyReport.split("-");
+        final String xValue = array[0] + "/" + array[1];
+
+        // Get count for the State on the day
+        StateDayEntry today = dataBean.getEntry(dailyReport, stateName);
+        todaysCount = func.apply(today);
+        yesterdaysCount = todaysCount;
+        if (previous != null) {
+          yesterdaysCount = func.apply(previous);
+        }
+        series.set(xValue, todaysCount - yesterdaysCount);
+        previous = today;
+      }
+    }
+
+    return chart;
+  }
+
   /**
    * Apply rules based on QueryParams to ChartSeries
    * in the LineChartModel provided.
@@ -281,7 +330,7 @@ public class RegionBean {
           if (array2.length == 0 && array1.length > 0) {
             return +1;
           }
-          if (array2.length == 0 && array1.length == 0) {
+          if (array2.length == 0) {
             return 0;
           }
 
@@ -294,6 +343,7 @@ public class RegionBean {
 
     return sorted;
   }
+
 
   /**
    * Get the LineChartModel for all States using the Function provided

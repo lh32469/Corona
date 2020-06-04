@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="template.xhtml">
+
+    <ui:define name="center">
+            <p:chart type="line"
+                     model="#{region.newCaseRates}"
+                     style="width:1200px;height:750px;border: 20px"/>
+    </ui:define>
+
+</ui:composition>
+
+</html>

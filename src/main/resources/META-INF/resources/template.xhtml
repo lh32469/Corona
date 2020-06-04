@@ -42,15 +42,18 @@
                                  title="States to include.  Example: or,wa"/>
 
                     <p:commandButton value="Cumulative"
+                                     title="Cumulative Number of Cases by State"
                                      action="index?faces-redirect=true">
                     </p:commandButton>
 
                     <p:commandButton value="Deaths"
+                                     title="Cumulative Number of Deaths by State"
                                      action="deaths?faces-redirect=true">
                     </p:commandButton>
 
-                    <p:commandButton value="Spikes"
-                                     action="spikes?faces-redirect=true">
+                    <p:commandButton value="Rates"
+                                     title="Daily New Cases Per Capita by State"
+                                     action="rates?faces-redirect=true">
                     </p:commandButton>
 
                     <p:inputText id="exclude"
