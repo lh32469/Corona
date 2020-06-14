@@ -208,8 +208,8 @@ public class RegionBean {
   public LineChartModel getNewCaseRates() {
 
     LineChartModel chart = getRates(entry -> {
-      final int capita = dataBean.getPopulation(entry.getName()) / 100000;
-      return entry.getCumulative()/capita;
+      final float capita = dataBean.getPopulation(entry.getName()) / 100000.0f;
+      return entry.getCumulative() / capita;
     });
 
     chart.setTitle("Daily New Cases Per Capita by State");
@@ -217,7 +217,7 @@ public class RegionBean {
     return chart;
   }
 
-  public LineChartModel getRates(final Function<StateDayEntry, Integer> func) {
+  public LineChartModel getRates(final Function<StateDayEntry, Float> func) {
     LineChartModel chart = createChart();
 
     // Collect data for each State and populate charts.
@@ -225,13 +225,7 @@ public class RegionBean {
       LineChartSeries series = new LineChartSeries(stateName);
       chart.addSeries(series);
 
-      StateDayEntry previous = null;
-      int yesterdaysCount = 0;
-      int todaysCount = 0;
-
-      if ("New York".equals(stateName)) {
-        LOG.info("stateName = " + stateName);
-      }
+      float yesterdaysCount = 0;
 
       for (String dailyReport : dataBean.getSortedDays()) {
 
@@ -240,13 +234,17 @@ public class RegionBean {
 
         // Get count for the State on the day
         StateDayEntry today = dataBean.getEntry(dailyReport, stateName);
-        todaysCount = func.apply(today);
-        yesterdaysCount = todaysCount;
-        if (previous != null) {
-          yesterdaysCount = func.apply(previous);
+        float todaysCount = func.apply(today);
+
+        if (yesterdaysCount == 0) {
+          // To avoid big spike at start of graph
+          yesterdaysCount = todaysCount;
         }
-        series.set(xValue, todaysCount - yesterdaysCount);
-        previous = today;
+
+        // Round to one decimal place
+        float rounded = Math.round((todaysCount - yesterdaysCount) * 10) / 10.0f;
+        series.set(xValue, rounded);
+        yesterdaysCount = todaysCount;
       }
     }
 
@@ -334,10 +332,10 @@ public class RegionBean {
             return 0;
           }
 
-          int s1M = Integer.parseInt(array1[array1.length - 1].toString());
-          int s2M = Integer.parseInt(array2[array2.length - 1].toString());
+          float s1M = Float.parseFloat(array1[array1.length - 1].toString());
+          float s2M = Float.parseFloat(array2[array2.length - 1].toString());
 
-          return s2M - s1M;
+          return (int) (s2M - s1M);
         })
         .collect(Collectors.toList());
 
