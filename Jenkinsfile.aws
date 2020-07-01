@@ -1,0 +1,53 @@
+pipeline {
+
+  options {
+    // Discard everything except the last 10 builds
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+    // Don't build the same branch concurrently
+    disableConcurrentBuilds()
+  }
+
+  agent any
+
+  stages {
+
+    stage('Git checkout') {
+      steps {
+        // Get John Hopkins data
+        dir('COVID') {
+          git 'https://github.com/CSSEGISandData/COVID-19'
+        }
+      }
+    }
+
+    stage('Build') {
+      agent {
+        docker {
+          reuseNode true
+          image 'maven:latest'
+          args '-u root -v /var/lib/jenkins/.m2:/root/.m2'
+        }
+      }
+      steps {
+        sh 'mvn clean package'
+      }
+    }
+
+    stage('Build Docker Image') {
+      environment {
+        registry = "corona/master"
+        registryCredential = 'dockerhub'
+      }
+      steps {
+        sh 'ls -l target'
+        script {
+          image = docker.build registry + ":$BUILD_NUMBER"
+        }
+        // Cleanup previous images older than 1 hour
+        sh 'docker image prune -af --filter "label=app.name=corona" --filter "until=1h"'
+      }
+    }
+
+  }
+
+}
