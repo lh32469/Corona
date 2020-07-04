@@ -8,7 +8,7 @@ corona:
   # Default number of States to display if no QueryParam
   states: 10
   # Number of Days to display in charts.
-  days: 21
+  days: 25
   # Location of downloaded repo: https://github.com/CSSEGISandData/COVID-19
   data:
     repo: COVID/csse_covid_19_data/csse_covid_19_daily_reports
