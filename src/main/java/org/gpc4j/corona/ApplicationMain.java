@@ -27,6 +27,16 @@ public class ApplicationMain {
 //    return cmd.get(this.toString());
 //  }
   public static void main(String[] args) {
+
+    /**
+     Workaround for issue in RegionBean.sortCharts:
+
+     java.lang.IllegalArgumentException: Comparison method violates its general contract!
+     at java.base/java.util.TimSort.mergeLo(TimSort.java:781) ~[na:na]
+
+     */
+    System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+
     SpringApplication.run(ApplicationMain.class, args);
   }
 
