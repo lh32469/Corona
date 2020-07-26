@@ -1,6 +1,6 @@
 server:
   servlet:
-    contextPath: /corona
+    contextPath: /
   http2:
     enabled: true
 
