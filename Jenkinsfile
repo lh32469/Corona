@@ -63,7 +63,7 @@ pipeline {
 
     stage('Run Docker Image') {
       steps {
-        sh 'docker run -d -p 2019:8080 ' +
+        sh 'docker run -d ' +
             '--restart=always ' +
             '--dns=172.17.0.1 ' +
             '--name corona-master ' +
