@@ -2,7 +2,7 @@
 
 Spring Boot JSF App for viewing data.  
 
-Running here:  http://www.gpc4j.org/corona
+Running here:  http://corona.gpc4j.org
 
 Takes Daily data from this repo:
 
@@ -22,6 +22,6 @@ Run:
  
 Access local copy:
 
-    http://localhost:8080/corona
+    http://localhost:8080
 
 
