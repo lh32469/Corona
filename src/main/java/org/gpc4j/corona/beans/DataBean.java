@@ -20,7 +20,11 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -105,13 +109,27 @@ public class DataBean implements Serializable {
    */
   static final Function<CSVRecord, Integer> getActiveCount =
       record -> {
-        int confirmed;
-        int deaths;
-        int recovered;
+        int confirmed = 0;
+        int deaths = 0;
+        int recovered = 0;
 
-        confirmed = Integer.parseInt(record.get("Confirmed"));
-        deaths = Integer.parseInt(record.get("Deaths"));
-        recovered = Integer.parseInt(record.get("Recovered"));
+        try {
+          confirmed = Integer.parseInt(record.get("Confirmed"));
+        } catch (NumberFormatException ex) {
+          LOG.info(record.getRecordNumber() + ", " + ex);
+        }
+
+        try {
+          deaths = Integer.parseInt(record.get("Deaths"));
+        } catch (NumberFormatException ex) {
+          LOG.info(record.getRecordNumber() + ", " + ex);
+        }
+
+        try {
+          recovered = Integer.parseInt(record.get("Recovered"));
+        } catch (NumberFormatException ex) {
+          LOG.info(record.getRecordNumber() + ", " + ex);
+        }
 
         return confirmed - deaths - recovered;
       };
