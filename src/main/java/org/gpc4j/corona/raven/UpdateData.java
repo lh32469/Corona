@@ -27,7 +27,7 @@ public class UpdateData {
   /**
    * Location of cloned COVID-19 Git data repository.
    */
-  static final String repoDir = "/Users/lh32469/Projects/Corona/COVID/csse_covid_19_data/csse_covid_19_daily_reports";
+  static final String repoDir = "csse_covid_19_data/csse_covid_19_daily_reports";
   private static DocumentStore docStore;
 
   static Logger LOG = LoggerFactory.getLogger(UpdateData.class);
