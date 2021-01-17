@@ -63,8 +63,13 @@
       <artifactId>commons-csv</artifactId>
       <version>1.7</version>
     </dependency>
+    <dependency>
+      <groupId>net.ravendb</groupId>
+      <artifactId>ravendb</artifactId>
+      <version>4.1.7</version>
+    </dependency>
   </dependencies>
- 
+
   <build>
     <plugins>
       <plugin>
