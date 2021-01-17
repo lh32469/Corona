@@ -60,6 +60,7 @@ public class States {
     SYMBOLS.put("South Carolina", "SC");
     SYMBOLS.put("South Dakota", "SD");
     SYMBOLS.put("West Virginia", "WV");
+    SYMBOLS.put("DC","District of Columbia");
   }
 
 
