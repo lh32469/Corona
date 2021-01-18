@@ -4,6 +4,7 @@ import org.gpc4j.corona.raven.UpdateData;
 import org.slf4j.MDC;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -15,7 +16,7 @@ import java.util.Arrays;
 @SpringBootApplication
 //@ComponentScan({"org.gpc4j.corona.beans"})
 
-//@RestController
+@EnableDiscoveryClient
 public class ApplicationMain {
 
   //  @Autowired()
@@ -31,7 +32,7 @@ public class ApplicationMain {
 //    return cmd.get(this.toString());
 //  }
   public static void main(String[] args) throws IOException {
-    
+
     // Add hostname to Mapped Diagnostic Context for Logback XML file variables.
     MDC.put("hostname", InetAddress.getLocalHost().getHostName());
 
