@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <appender name="Splunk"
+            class="com.splunk.logging.HttpEventCollectorLogbackAppender">
+    <url>http://dell-4290.local:8088</url>
+    <token>eae719df-f94f-4b1e-b776-dbdb259e3697</token>
+    <!--    <index>portfolio</index>-->
+    <!--  hostname is defined via MDC in ApplicationMain  -->
+    <source>${hostname}</source>
+    <sourcetype>${BRANCH}</sourcetype>
+    <batch_size_count>5</batch_size_count>
+    <disableCertificateValidation>true</disableCertificateValidation>
+    <layout class="ch.qos.logback.classic.PatternLayout">
+      <pattern>{ %M: '%msg' }</pattern>
+    </layout>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>DEBUG</level>
+    </filter>
+  </appender>
+
+  <logger name="org.gpc4j.pf" level="INFO"/>
+
+  <root level="INFO">
+    <appender-ref ref="Splunk"/>
+  </root>
+
+</configuration>

@@ -1,10 +1,12 @@
 package org.gpc4j.corona;
 
 import org.gpc4j.corona.raven.UpdateData;
+import org.slf4j.MDC;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Arrays;
 
 /**
@@ -29,6 +31,9 @@ public class ApplicationMain {
 //    return cmd.get(this.toString());
 //  }
   public static void main(String[] args) throws IOException {
+    
+    // Add hostname to Mapped Diagnostic Context for Logback XML file variables.
+    MDC.put("hostname", InetAddress.getLocalHost().getHostName());
 
     /**
      Workaround for issue in RegionBean.sortCharts:

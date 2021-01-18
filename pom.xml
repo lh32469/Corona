@@ -5,17 +5,17 @@
   <artifactId>Corona</artifactId>
   <version>1.0.0</version>
   <packaging>jar</packaging>
-  
+
   <name>Corona Virus App</name>
   <url>https://codenotfound.com/jsf-primefaces-example.html</url>
-  
+
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.1.9.RELEASE</version>
     <relativePath /> <!-- lookup parent from repository -->
   </parent>
-  
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -68,6 +68,11 @@
       <artifactId>ravendb</artifactId>
       <version>4.1.7</version>
     </dependency>
+    <dependency>
+      <groupId>com.splunk.logging</groupId>
+      <artifactId>splunk-library-javalogging</artifactId>
+      <version>1.8.0</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -78,5 +83,5 @@
       </plugin>
     </plugins>
   </build>
-  
+
 </project>
