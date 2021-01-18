@@ -129,7 +129,7 @@ public class UpdateData {
 
     docStore.close();
 
-    top();
+//    top();
   }
 
 
