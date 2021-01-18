@@ -4,6 +4,7 @@ management:
       exposure:
         include: "*"
 server:
+  port: 8085
   servlet:
     contextPath: /
   http2:
