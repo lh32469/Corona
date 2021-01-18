@@ -78,6 +78,9 @@ public class UpdateData {
 
   static final Consumer<CountyEntry> storeEntry =
       county -> {
+        if (county.getCumulative() == 0) {
+          return;
+        }
         try (IDocumentSession session = docStore.openSession()) {
           LOG.info("Storing: " + county);
           if (Strings.isNotEmpty(county.getState())) {
