@@ -4,8 +4,8 @@
   <appender name="Splunk"
             class="com.splunk.logging.HttpEventCollectorLogbackAppender">
     <url>http://dell-4290.local:8088</url>
-    <token>eae719df-f94f-4b1e-b776-dbdb259e3697</token>
-    <!--    <index>portfolio</index>-->
+    <token>3af42415-e2a9-4783-9384-57a44adbf099</token>
+<!--       <index>portfolio</index>-->
     <!--  hostname is defined via MDC in ApplicationMain  -->
     <source>${hostname}</source>
     <sourcetype>${BRANCH}</sourcetype>
