@@ -64,9 +64,23 @@ public class DataBean implements Serializable {
    * CSVRecord format.
    */
   Predicate<CSVRecord> isState(String state) {
-    return record -> record.get("Province_State").equals(state);
-  }
+    final String key = "Province_State";
 
+    return record -> {
+      try {
+        if (record.get(key) != null) {
+          return record.get(key).equals(state);
+        } else {
+          return false;
+        }
+      } catch (IllegalArgumentException ex) {
+        LOG.warn(ex.toString());
+        return false;
+      }
+
+    };
+  }
+//FIPS,Admin2,Province_State,Country_Region,Last_Update,Lat,Long_,Confirmed,Deaths,Recovered,Active,Combined_Key,Incident_Rate,Case_Fatality_Ratio
   /**
    * Get the total number of cumulative cases from the CSVRecord.
    */
@@ -211,61 +225,61 @@ public class DataBean implements Serializable {
 
     List<StateDayEntry> entries = new ArrayList<>(50);
 
-    List<Path> sorted = Files.list(Path.of(repoDir))
-        .filter(file -> file.getFileName().toString().endsWith(".csv"))
-        .sorted()
-        .collect(Collectors.toList());
-
-    // Only load last 'numDays' days of data.
-    sorted = sorted.subList(sorted.size() - numDays, sorted.size());
-    System.out.println("sorted = " + sorted);
-
-    sorted.forEach(file -> {
-
-      try {
-
-        FileReader reader = new FileReader(file.toFile());
-        CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
-        List<CSVRecord> records = parser.getRecords();
-
-        for (String state : States.SYMBOLS.keySet()) {
-
-          StateDayEntry entry = new StateDayEntry();
-          entry.setFileName(file.getFileName().toString());
-          entry.setName(state);
-          entry.setSymbol(States.SYMBOLS.get(state));
-          entries.add(entry);
-
-          Optional<Integer> cumulativeCount = records.parallelStream()
-              .filter(r -> r.size() > 3)
-              .filter(isState(state))
-              .map(getCumulativeCount)
-              .reduce(Integer::sum);
-
-          cumulativeCount.ifPresent(entry::setCumulative);
-
-          Optional<Integer> activeCount = records.parallelStream()
-              .filter(r -> r.size() > 3)
-              .filter(isState(state))
-              .map(getActiveCount)
-              .reduce(Integer::sum);
-
-          activeCount.ifPresent(entry::setActive);
-
-          Optional<Integer> deathsCount = records.parallelStream()
-              .filter(r -> r.size() > 3)
-              .filter(isState(state))
-              .map(getDeathsCount)
-              .reduce(Integer::sum);
-
-          deathsCount.ifPresent(entry::setDeaths);
-        }
-
-      } catch (IOException e) {
-        LOG.error(e.toString(), e);
-      }
-
-    });
+//    List<Path> sorted = Files.list(Path.of(repoDir))
+//        .filter(file -> file.getFileName().toString().endsWith(".csv"))
+//        .sorted()
+//        .collect(Collectors.toList());
+//
+//    // Only load last 'numDays' days of data.
+////    sorted = sorted.subList(sorted.size() - numDays, sorted.size());
+//   // System.out.println("sorted = " + sorted);
+//
+//    sorted.forEach(file -> {
+//
+//      try {
+//
+//        FileReader reader = new FileReader(file.toFile());
+//        CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+//        List<CSVRecord> records = parser.getRecords();
+//
+//        for (String state : States.SYMBOLS.keySet()) {
+//
+//          StateDayEntry entry = new StateDayEntry();
+//          entry.setFileName(file.getFileName().toString());
+//          entry.setName(state);
+//          entry.setSymbol(States.SYMBOLS.get(state));
+//          entries.add(entry);
+//
+//          Optional<Integer> cumulativeCount = records.parallelStream()
+//              .filter(r -> r.size() > 3)
+//              .filter(isState(state))
+//              .map(getCumulativeCount)
+//              .reduce(Integer::sum);
+//
+//          cumulativeCount.ifPresent(entry::setCumulative);
+//
+//          Optional<Integer> activeCount = records.parallelStream()
+//              .filter(r -> r.size() > 3)
+//              .filter(isState(state))
+//              .map(getActiveCount)
+//              .reduce(Integer::sum);
+//
+//          activeCount.ifPresent(entry::setActive);
+//
+//          Optional<Integer> deathsCount = records.parallelStream()
+//              .filter(r -> r.size() > 3)
+//              .filter(isState(state))
+//              .map(getDeathsCount)
+//              .reduce(Integer::sum);
+//
+//          deathsCount.ifPresent(entry::setDeaths);
+//        }
+//
+//      } catch (IOException e) {
+//        LOG.error(e.toString(), e);
+//      }
+//
+//    });
 
     return entries;
   }

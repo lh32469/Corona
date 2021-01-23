@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -23,6 +24,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class UpdateData {
+
+  public static final DateTimeFormatter FILE_FORMAT =
+      DateTimeFormatter.ofPattern("MM-dd-yyyy");
 
   /**
    * Location of cloned COVID-19 Git data repository.
@@ -84,13 +88,13 @@ public class UpdateData {
         try (IDocumentSession session = docStore.openSession()) {
           LOG.info("Storing: " + county);
           if (Strings.isNotEmpty(county.getState())) {
-            String stateSymbol = States.SYMBOLS.get(county.getState().trim());
+            String stateSymbol = States.NAME_TO_SYMBOL.get(county.getState().trim());
             final String id = county.getDay().trim() + "." + stateSymbol;
             StateEntry state = session.load(StateEntry.class, id);
             if (null == state) {
               state = new StateEntry();
               state.setState(county.getState());
-              state.setSymbol(States.SYMBOLS.get(county.getState()));
+              state.setSymbol(States.NAME_TO_SYMBOL.get(county.getState()));
               state.setDay(county.getDay());
             }
             // Null out redundant data.
@@ -120,19 +124,27 @@ public class UpdateData {
 
     LocalDate now = LocalDate.now();
 
+    processDay(now);
+    processDay(now.minusDays(1));
+    processDay(now.minusDays(2));
+
+    LOG.info("Complete");
+    docStore.close();
+    LOG.info("Closed");
+
+  }
+
+  public static void processDay(LocalDate day) throws IOException {
+
+    LOG.info("day = " + day);
+    final String fileName = FILE_FORMAT.format(day) + ".csv";
+
     Files.list(Path.of(repoDir))
-        .filter(file -> file.getFileName().toString().endsWith(".csv"))
-        .filter(file -> file.getFileName().toString().contains(String.valueOf(now.getYear())))
-        .filter(file -> file.getFileName().toString().contains(String.valueOf(now.getMonthValue())))
-        .filter(file -> file.getFileName().toString().contains(String.valueOf(now.getDayOfMonth() - 1)))
-        .limit(1)
+        .filter(file -> file.getFileName().toString().equals(fileName))
+        .peek(file -> LOG.info("Processing: " + file.getFileName()))
         .map(getRecords)
         .map(convertRecords)
         .forEach(storeEntries);
-
-    docStore.close();
-
-//    top();
   }
 
 
