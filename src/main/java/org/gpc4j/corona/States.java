@@ -1,13 +1,16 @@
 package org.gpc4j.corona;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class States {
 
   public static final Map<String, String> NAME_TO_SYMBOL = new HashMap<>();
   public static final Map<String, String> SYMBOL_TO_NAME = new HashMap<>();
-
+  public static final List<String> ALL_SYMBOLS;
 
   static {
 
@@ -68,6 +71,10 @@ public class States {
     for (String key : NAME_TO_SYMBOL.keySet()) {
       SYMBOL_TO_NAME.put(NAME_TO_SYMBOL.get(key), key);
     }
+
+
+    ALL_SYMBOLS = Collections
+        .unmodifiableList(new LinkedList<>(NAME_TO_SYMBOL.values()));
 
   }
 

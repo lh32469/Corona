@@ -24,11 +24,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -79,7 +79,7 @@ public class RegionBean {
    * Application Scoped Bean containing data.
    */
   @Inject
-  private DataBean dataBean;
+  DataBean dataBean;
   @Inject
   RavenBean ravenBean;
 
@@ -222,13 +222,13 @@ public class RegionBean {
 
   public LineChartModel getNewCaseRates() {
 
-    LineChartModel chart = getRates(entry ->  entry.getCumulative());
+    LineChartModel chart = getRates(entry -> entry.getCumulative());
 //      final float capita = dataBean.getPopulation(entry.getState()) / 100000.0f;
 //      return entry.getCumulative() / capita;
 //    });
 
     chart.setTitle("Daily New Cases Per Capita by State");
-    processModel(chart);
+//    processModel(chart);
     return chart;
 
   }
@@ -246,97 +246,66 @@ public class RegionBean {
 //  }
 
   public LineChartModel getRates(final Function<StateEntry, Integer> func) {
-    LineChartModel chart = createChart();
 
+    LineChartModel chart = createChart();
     LocalDate now = LocalDate.now();
+    List<String> statesToDisplay;
+
 
     try (IDocumentSession session = ravenBean.getSession()) {
 
-      List<StateEntry> todaysData = session.query(StateEntry.class)
-          .whereEquals("day", DTF.format(now.minusDays(1)))
-          .toList();
 
-      List<StateEntry> yesterdaysData = session.query(StateEntry.class)
-          .whereEquals("day", DTF.format(now.minusDays(2)))
-          .toList();
+      if (Strings.isNotBlank(include)) {
+        // Only get specified
+        statesToDisplay = Arrays.asList(include.split(","));
+        LOG.debug("include = " + include);
+      } else {
 
-      // Map of highest rate to State symbol
-      Map<Float, String> rates = new TreeMap<>();
+        // Needs to be List of Objects for .whereIn clause
+        List<Object> days = Arrays.asList(
+            DTF.format(now.minusDays(0)),
+            DTF.format(now.minusDays(1)));
 
-      for (StateEntry entry : todaysData) {
-        final String stateSymbol = entry.getSymbol();
-        final int todaysCount = func.apply(entry);
-        Optional<StateEntry> previous = yesterdaysData.stream()
-            .filter(e -> e.getSymbol().equals(stateSymbol))
-            .findFirst();
+        List<StateEntry> recentData = session.query(StateEntry.class)
+            .whereIn("day", days)
+            .whereNotEquals("symbol", null)
+            .toList();
 
-        if (previous.isPresent()) {
-          final int yesterdaysCount = func.apply(previous.get());
-          float rounded = Math.round((todaysCount - yesterdaysCount) * 10) / 10.0f;
-          final float capita = dataBean.getPopulation(entry.getState()) / 100000.0f;
-          rates.put(rounded / capita, stateSymbol);
-        }
+        // Rates for the last two days.
+        Map<String, Float> latestRates = getTheRates(now, States.ALL_SYMBOLS, recentData);
+        statesToDisplay = latestRates.entrySet().stream()
+            .sorted((e1, e2) -> Math.round(e2.getValue() - e1.getValue()))
+            .limit(10)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toUnmodifiableList());
+
+        LOG.info("Top 10 = " + statesToDisplay);
 
       }
 
-      LOG.info("rates = " + rates);
-    }
+      /*
+       * Load all relevant data.
+       */
+      List<StateEntry> theData = session.query(StateEntry.class)
+          .whereIn("day", new LinkedList<>(getDaysToDisplay()))
+          .whereIn("symbol", new LinkedList<>(statesToDisplay))
+          .toList();
 
 
-//    // Collect data for each State and populate charts.
-//    for (String stateName : States.NAME_TO_SYMBOL.keySet()) {
-//      LineChartSeries series = new LineChartSeries(stateName);
-//      chart.addSeries(series);
-//
-//      float yesterdaysCount = 0;
-//
-//      for (String dailyReport : dataBean.getSortedDays()) {
-//
-//        final String[] array = dailyReport.split("-");
-//        final String xValue = array[0] + "/" + array[1];
-//
-//        // Get count for the State on the day
-//        StateDayEntry today = dataBean.getEntry(dailyReport, stateName);
-//        float todaysCount = func.apply(today);
-//
-//        if (yesterdaysCount == 0) {
-//          // To avoid big spike at start of graph
-//          yesterdaysCount = todaysCount;
-//        }
-//
-//        // Round to one decimal place
-//        float rounded = Math.round((todaysCount - yesterdaysCount) * 10) / 10.0f;
-//        series.set(xValue, rounded);
-//        yesterdaysCount = todaysCount;
-//      }
-//    }
+      for (String stateSymbol : statesToDisplay) {
+        final String label = States.SYMBOL_TO_NAME.get(stateSymbol);
+        LineChartSeries series = new LineChartSeries(label);
+        chart.addSeries(series);
 
-    return chart;
-  }
+        for (int i = 20; i >= 0; i--) {
+          LocalDate day = now.minusDays(i);
+          Map<String, Float> rates1 = getTheRates(day, 3, Arrays.asList(stateSymbol), theData);
+          series.set(dayToLabel(day), rates1.get(stateSymbol));
+          if (i == 0) {
+            series.setLabel(label + " (" + rates1.get(stateSymbol) + ")");
+          }
+        }
 
-
-  public LineChartModel getRates3DayMA(final Function<StateDayEntry, Float> func) {
-    LineChartModel chart = createChart();
-
-    // Collect data for each State and populate charts.
-    for (String stateName : States.NAME_TO_SYMBOL.keySet()) {
-      LineChartSeries series = new LineChartSeries(stateName);
-      chart.addSeries(series);
-
-      String[] days = dataBean.getSortedDays().toArray(new String[0]);
-
-      for (int i = 3; i < days.length; i++) {
-        StateDayEntry start = dataBean.getEntry(days[i - 3], stateName);
-
-        final String[] array = days[i].split("-");
-        final String xValue = array[0] + "/" + array[1];
-
-        StateDayEntry finish = dataBean.getEntry(days[i], stateName);
-
-        float rounded = Math.round(
-            ((func.apply(finish) - func.apply(start)) * 10) / 30.0f);
-
-        series.set(xValue, rounded);
       }
 
     }
@@ -346,10 +315,81 @@ public class RegionBean {
 
 
   /**
+   * Get a Map of rates for the List of State symbols provided on the date
+   * provided.  Uses current date's count versus previous date's count to
+   * compute the rate.
+   *
+   * @param day          Date to get rates for
+   * @param stateSymbols Symbols of the States to get rates for.
+   * @param theData      Relevant data.
+   * @return Map of State symbols to rates for the date provided.
+   */
+  Map<String, Float> getTheRates(final LocalDate day,
+                                 final List<String> stateSymbols,
+                                 final List<StateEntry> theData) {
+
+    return getTheRates(day, 1, stateSymbols, theData);
+  }
+
+
+  /**
+   * Get a Map of moving day average rates for the List of State symbols
+   * provided on the date provided.  Uses current date's count versus previous
+   * daysToAverage number of date's count to compute the rate.
+   *
+   * @param day           Date to get rates for
+   * @param daysToAverage Number of days to to rolling average
+   * @param stateSymbols  Symbols of the States to get rates for.
+   * @param theData       Relevant data.
+   * @return Map of State symbols to rates for the date provided.
+   */
+  Map<String, Float> getTheRates(final LocalDate day,
+                                 final int daysToAverage,
+                                 final List<String> stateSymbols,
+                                 final List<StateEntry> theData) {
+
+    Map<String, Float> rates = new HashMap<>();
+
+    for (String stateSymbol : stateSymbols) {
+
+      Optional<StateEntry> current = theData.stream()
+          .filter(e -> e.getSymbol().equals(stateSymbol))
+          .filter(e -> e.getDay().equals(DTF.format(day)))
+          .findAny();
+
+      if (current.isEmpty()) {
+        LOG.info(DTF.format(day) + ",  Not Found: " + stateSymbol);
+        continue;
+      }
+
+      Optional<StateEntry> previous = theData.stream()
+          .filter(e -> e.getSymbol().equals(stateSymbol))
+          .filter(e -> e.getDay().equals(DTF.format(day.minusDays(daysToAverage))))
+          .findAny();
+
+      if (previous.isEmpty()) {
+        LOG.info(DTF.format(day.minusDays(daysToAverage)) + ",  Not Found: " + stateSymbol);
+        continue;
+      }
+
+      final int prev = previous.get().getCumulative();
+      final int curr = current.get().getCumulative();
+      final float capita = dataBean.getPopulation(current.get().getState()) / 100000.0f;
+      int dayAverage = (curr - prev) / daysToAverage;
+      float rounded = Math.round((dayAverage * 10) / capita) / 10.0f;
+      rates.put(stateSymbol, rounded);
+    }
+
+    LOG.trace(day + ":  " + rates);
+    return rates;
+  }
+
+
+  /**
    * Apply rules based on QueryParams to ChartSeries
    * in the LineChartModel provided.
    */
-  void processModel(final LineChartModel chart) {
+  private void processModel(final LineChartModel chart) {
 
     List<ChartSeries> oldSeriesList = sortCharts(chart.getSeries());
     chart.getSeries().clear();
@@ -436,35 +476,6 @@ public class RegionBean {
     return sorted;
   }
 
-
-  /**
-   * Get the LineChartModel for all States using the Function provided
-   * to provide the value for each StateDayEntry.
-   */
-  public LineChartModel getChartOld(final Function<StateDayEntry, Integer> func) {
-
-    final LineChartModel chart = createChart();
-
-    // Collect data for each State and populate charts.
-    for (String stateName : States.NAME_TO_SYMBOL.keySet()) {
-      LineChartSeries series = new LineChartSeries(stateName);
-      chart.addSeries(series);
-
-      // Get population for calculating per 100,000 people.
-      final int capita = dataBean.getPopulation(stateName) / 100000;
-
-      for (String dailyReport : dataBean.getSortedDays()) {
-        final String[] array = dailyReport.split("-");
-        final String xValue = array[0] + "/" + array[1];
-
-        // Get count for the State on the day
-        StateDayEntry entry = dataBean.getEntry(dailyReport, stateName);
-        series.set(xValue, func.apply(entry));
-      }
-    }
-
-    return chart;
-  }
 
   public LineChartModel getChart(final Function<StateEntry, Integer> func) {
     return getChart("cumulative", func);
@@ -577,15 +588,22 @@ public class RegionBean {
   }
 
   /**
-   * Calculate average number of new cases for the List of
-   * StateDayEntries provided.
+   * Convert date provied to label suitable for x-axis labeling.
+   * Ex 2021-01-23 becomes 1/23
    */
-  Function<List<StateDayEntry>, Float> averageNewCases = list -> {
+  String dayToLabel(LocalDate date) {
+    final String[] array = DTF.format(date).split("-");
+    String month = array[1];
+    String day = array[2];
+    if (month.startsWith("0")) {
+      month = month.substring(1);
+    }
+    if (day.startsWith("0")) {
+      day = day.substring(1);
+    }
+    final String xValue = month + "/" + day;
+    return xValue;
+  }
 
-    StateDayEntry first = list.get(0);
-    StateDayEntry last = list.get(list.size() - 1);
-
-    return (float) ((last.getCumulative() - first.getCumulative()) / list.size());
-  };
 
 }
