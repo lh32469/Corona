@@ -1,8 +1,28 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 server:
+  port: 8085
   servlet:
     contextPath: /
   http2:
     enabled: true
+
+spring:
+  boot:
+    admin:
+      client:
+        url: http://dell-4290.local:8099
+        auto-deregistration: true
+        instance:
+          prefer-ip: true
+  #          service-base-url: http://dell-4290.local:8099
+  jackson:
+    serialization:
+      INDENT_OUTPUT: true
+    default-property-inclusion: non_null
 
 corona:
   # Default number of States to display if no QueryParam
@@ -14,6 +34,10 @@ corona:
     repo: COVID/csse_covid_19_data/csse_covid_19_daily_reports
 
 logging:
+  level:
+    root: INFO
+    org.apache.http: INFO
+    net.ravendb.client: WARN
   pattern:
     dateformat: MM-dd HH:mm:ss.SSS,America/Los_Angeles
 

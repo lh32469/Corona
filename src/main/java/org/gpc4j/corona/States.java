@@ -1,65 +1,81 @@
 package org.gpc4j.corona;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class States {
 
-  public static final Map<String, String> SYMBOLS = new HashMap<>();
+  public static final Map<String, String> NAME_TO_SYMBOL = new HashMap<>();
+  public static final Map<String, String> SYMBOL_TO_NAME = new HashMap<>();
+  public static final List<String> ALL_SYMBOLS;
 
   static {
 
-    SYMBOLS.put("Alabama", "AL");
-    SYMBOLS.put("Alaska", "AK");
-    SYMBOLS.put("Arizona", "AZ");
-    SYMBOLS.put("Arkansas", "AR");
-    SYMBOLS.put("California", "CA");
-    SYMBOLS.put("Colorado", "CO");
-    SYMBOLS.put("Connecticut", "CT");
-    SYMBOLS.put("Delaware", "DE");
-    SYMBOLS.put("Florida", "FL");
-    SYMBOLS.put("Georgia", "GA");
-    SYMBOLS.put("Hawaii", "HI");
-    SYMBOLS.put("Idaho", "ID");
-    SYMBOLS.put("Illinois", "IL");
-    SYMBOLS.put("Indiana", "IN");
-    SYMBOLS.put("Iowa", "IA");
-    SYMBOLS.put("Kansas", "KS");
-    SYMBOLS.put("Kentucky", "KY");
-    SYMBOLS.put("Louisiana", "LA");
-    SYMBOLS.put("Maine", "ME");
-    SYMBOLS.put("Maryland", "MD");
-    SYMBOLS.put("Massachusetts", "MA");
-    SYMBOLS.put("Michigan", "MI");
-    SYMBOLS.put("Minnesota", "MN");
-    SYMBOLS.put("Mississippi", "MS");
-    SYMBOLS.put("Missouri", "MO");
-    SYMBOLS.put("Montana", "MT");
-    SYMBOLS.put("Nebraska", "NE");
-    SYMBOLS.put("Nevada", "NV");
-    SYMBOLS.put("Ohio", "OH");
-    SYMBOLS.put("Oklahoma", "OK");
-    SYMBOLS.put("Oregon", "OR");
-    SYMBOLS.put("Pennsylvania", "PA");
-    SYMBOLS.put("Tennessee", "TN");
-    SYMBOLS.put("Texas", "TX");
-    SYMBOLS.put("Utah", "UT");
-    SYMBOLS.put("Vermont", "VT");
-    SYMBOLS.put("Virginia", "VA");
-    SYMBOLS.put("Washington", "WA");
-    SYMBOLS.put("Wisconsin", "WI");
-    SYMBOLS.put("Wyoming", "WY");
+    NAME_TO_SYMBOL.put("Alabama", "AL");
+    NAME_TO_SYMBOL.put("Alaska", "AK");
+    NAME_TO_SYMBOL.put("Arizona", "AZ");
+    NAME_TO_SYMBOL.put("Arkansas", "AR");
+    NAME_TO_SYMBOL.put("California", "CA");
+    NAME_TO_SYMBOL.put("Colorado", "CO");
+    NAME_TO_SYMBOL.put("Connecticut", "CT");
+    NAME_TO_SYMBOL.put("Delaware", "DE");
+    NAME_TO_SYMBOL.put("Florida", "FL");
+    NAME_TO_SYMBOL.put("Georgia", "GA");
+    NAME_TO_SYMBOL.put("Hawaii", "HI");
+    NAME_TO_SYMBOL.put("Idaho", "ID");
+    NAME_TO_SYMBOL.put("Illinois", "IL");
+    NAME_TO_SYMBOL.put("Indiana", "IN");
+    NAME_TO_SYMBOL.put("Iowa", "IA");
+    NAME_TO_SYMBOL.put("Kansas", "KS");
+    NAME_TO_SYMBOL.put("Kentucky", "KY");
+    NAME_TO_SYMBOL.put("Louisiana", "LA");
+    NAME_TO_SYMBOL.put("Maine", "ME");
+    NAME_TO_SYMBOL.put("Maryland", "MD");
+    NAME_TO_SYMBOL.put("Massachusetts", "MA");
+    NAME_TO_SYMBOL.put("Michigan", "MI");
+    NAME_TO_SYMBOL.put("Minnesota", "MN");
+    NAME_TO_SYMBOL.put("Mississippi", "MS");
+    NAME_TO_SYMBOL.put("Missouri", "MO");
+    NAME_TO_SYMBOL.put("Montana", "MT");
+    NAME_TO_SYMBOL.put("Nebraska", "NE");
+    NAME_TO_SYMBOL.put("Nevada", "NV");
+    NAME_TO_SYMBOL.put("Ohio", "OH");
+    NAME_TO_SYMBOL.put("Oklahoma", "OK");
+    NAME_TO_SYMBOL.put("Oregon", "OR");
+    NAME_TO_SYMBOL.put("Pennsylvania", "PA");
+    NAME_TO_SYMBOL.put("Tennessee", "TN");
+    NAME_TO_SYMBOL.put("Texas", "TX");
+    NAME_TO_SYMBOL.put("Utah", "UT");
+    NAME_TO_SYMBOL.put("Vermont", "VT");
+    NAME_TO_SYMBOL.put("Virginia", "VA");
+    NAME_TO_SYMBOL.put("Washington", "WA");
+    NAME_TO_SYMBOL.put("Wisconsin", "WI");
+    NAME_TO_SYMBOL.put("Wyoming", "WY");
 
-    SYMBOLS.put("New Hampshire", "NH");
-    SYMBOLS.put("New Jersey", "NJ");
-    SYMBOLS.put("New Mexico", "NM");
-    SYMBOLS.put("New York", "NY");
-    SYMBOLS.put("North Carolina", "NC");
-    SYMBOLS.put("North Dakota", "ND");
-    SYMBOLS.put("Rhode Island", "RI");
-    SYMBOLS.put("South Carolina", "SC");
-    SYMBOLS.put("South Dakota", "SD");
-    SYMBOLS.put("West Virginia", "WV");
+    NAME_TO_SYMBOL.put("New Hampshire", "NH");
+    NAME_TO_SYMBOL.put("New Jersey", "NJ");
+    NAME_TO_SYMBOL.put("New Mexico", "NM");
+    NAME_TO_SYMBOL.put("New York", "NY");
+    NAME_TO_SYMBOL.put("North Carolina", "NC");
+    NAME_TO_SYMBOL.put("North Dakota", "ND");
+    NAME_TO_SYMBOL.put("Rhode Island", "RI");
+    NAME_TO_SYMBOL.put("South Carolina", "SC");
+    NAME_TO_SYMBOL.put("South Dakota", "SD");
+    NAME_TO_SYMBOL.put("West Virginia", "WV");
+    NAME_TO_SYMBOL.put("District of Columbia", "DC");
+
+    // Create reverse mapping of symbol to name
+    for (String key : NAME_TO_SYMBOL.keySet()) {
+      SYMBOL_TO_NAME.put(NAME_TO_SYMBOL.get(key), key);
+    }
+
+
+    ALL_SYMBOLS = Collections
+        .unmodifiableList(new LinkedList<>(NAME_TO_SYMBOL.values()));
+
   }
 
 

@@ -1,20 +1,25 @@
 package org.gpc4j.corona;
 
+import org.gpc4j.corona.raven.UpdateData;
+import org.slf4j.MDC;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Arrays;
 
 /**
- *
  * @author Lyle T Harris (lyle.harris@gmail.com)
  */
 @SpringBootApplication
 //@ComponentScan({"org.gpc4j.corona.beans"})
 
-//@RestController
+@EnableDiscoveryClient
 public class ApplicationMain {
 
-//  @Autowired()
+  //  @Autowired()
 //  HystrixTestCommand2 cmd;
 //
 //  @Bean
@@ -26,7 +31,10 @@ public class ApplicationMain {
 //  public String showGreeting() {
 //    return cmd.get(this.toString());
 //  }
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
+
+    // Add hostname to Mapped Diagnostic Context for Logback XML file variables.
+    MDC.put("hostname", InetAddress.getLocalHost().getHostName());
 
     /**
      Workaround for issue in RegionBean.sortCharts:
@@ -37,7 +45,13 @@ public class ApplicationMain {
      */
     System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
-    SpringApplication.run(ApplicationMain.class, args);
+    System.out.println("Arrays.toString(args) = " + Arrays.toString(args));
+
+    if (Arrays.asList(args).contains("update")) {
+      UpdateData.main(args);
+    } else {
+      SpringApplication.run(ApplicationMain.class, args);
+    }
   }
 
 }
