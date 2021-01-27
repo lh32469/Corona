@@ -1,84 +1,97 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 
 <h:head>
-    <title>Corona Virus Tracker Graphs</title>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script src="https://www.googletagmanager.com/gtag/js?id=UA-160999861-1"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
+  <title>Corona Virus Tracker Graphs</title>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script src="https://www.googletagmanager.com/gtag/js?id=UA-160999861-1"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
 
-        gtag('config', 'UA-160999861-1');
-    </script>
+      function gtag() {
+          dataLayer.push(arguments);
+      }
+
+      gtag('js', new Date());
+
+      gtag('config', 'UA-160999861-1');
+  </script>
 </h:head>
 
 <h:body>
+  <f:view transient="true">
     <h:form id="Form">
 
-        <p:layout fullPage="true"
-                  style="padding: 5px;">
+      <p:layout fullPage="true"
+                style="padding: 5px;">
 
-            <p:layoutUnit position="north" style="align-content: center">
-                <p:panel style="align-content: center">
-                    <p:inputText id="include"
-                                 size="50"
-                                 autocomplete="off"
-                                 value="#{sBean.include}"
-                                 title="States to include.  Example: or,wa"/>
+        <p:layoutUnit position="north" style="align-content: center">
+          <p:panel style="align-content: center">
+            <p:inputText id="include"
+                         size="50"
+                         autocomplete="off"
+                         value="#{sBean.include}"
+                         title="States to include.  Example: or,wa"/>
 
-                    <p:commandButton value="Cumulative"
-                                     title="Cumulative Number of Cases by State"
-                                     action="index?faces-redirect=true">
-                    </p:commandButton>
+            <p:menuButton value="Cases">
+              <p:menuitem value="Cumulative"
+                          action="index?faces-redirect=true"
+                          update="messages"
+                          icon="pi pi-save"/>
+            </p:menuButton>
+            <p:commandButton value="Cumulative"
+                             title="Cumulative Number of Cases by State"
+                             action="index?faces-redirect=true">
+            </p:commandButton>
 
-                    <p:commandButton value="Deaths"
-                                     title="Cumulative Number of Deaths by State"
-                                     action="deaths?faces-redirect=true">
-                    </p:commandButton>
+            <p:commandButton value="Deaths"
+                             title="Cumulative Number of Deaths by State"
+                             action="deaths?faces-redirect=true">
+            </p:commandButton>
 
-                    <p:commandButton value="Rates"
-                                     title="Daily New Cases Per Capita by State"
-                                     action="rates?faces-redirect=true">
-                    </p:commandButton>
+            <p:commandButton value="Rates"
+                             title="Daily New Cases Per Capita by State"
+                             action="rates?faces-redirect=true">
+            </p:commandButton>
 
-                    <p:inputText id="exclude"
-                                 size="50"
-                                 autocomplete="off"
-                                 value="#{sBean.exclude}"
-                                 title="States to exclude.  Example: ny,nj"/>
+            <p:inputText id="exclude"
+                         size="50"
+                         autocomplete="off"
+                         value="#{sBean.exclude}"
+                         title="States to exclude.  Example: ny,nj"/>
 
-                </p:panel>
-            </p:layoutUnit>
+          </p:panel>
+        </p:layoutUnit>
 
-            <p:layoutUnit position="west">
-                <div style="padding: 5px;">
+        <p:layoutUnit position="west">
+          <div style="padding: 5px;">
 
-                </div>
-            </p:layoutUnit>
+          </div>
+        </p:layoutUnit>
 
-            <p:layoutUnit position="east">
-                <div style="padding: 5px;">
+        <p:layoutUnit position="east">
+          <div style="padding: 5px;">
 
-                </div>
-            </p:layoutUnit>
+          </div>
+        </p:layoutUnit>
 
 
-            <p:layoutUnit position="center">
-                <p:messages id="messages"
-                            showDetail="true"
-                            autoUpdate="true"
-                            closable="true"/>
-                <ui:insert name="center"/>
-            </p:layoutUnit>
+        <p:layoutUnit position="center">
+          <p:messages id="messages"
+                      showDetail="true"
+                      autoUpdate="true"
+                      closable="true"/>
+          <ui:insert name="center"/>
+        </p:layoutUnit>
 
-        </p:layout>
+      </p:layout>
     </h:form>
+  </f:view>
 </h:body>
 </html>
 
