@@ -9,8 +9,6 @@ server:
     contextPath: /
   http2:
     enabled: true
-  tomcat:
-      redirect-context-root: false
 
 spring:
   boot:
