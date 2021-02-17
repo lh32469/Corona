@@ -18,7 +18,7 @@ spring:
         auto-deregistration: true
         instance:
           prefer-ip: true
-  #          service-base-url: http://dell-4290.local:8099
+          service-base-url: http://corona.gpc4j.org
   jackson:
     serialization:
       INDENT_OUTPUT: true

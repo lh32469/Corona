@@ -82,7 +82,7 @@ pipeline {
             '--dns=172.17.0.1 ' +
             "--name $svcId " +
             '-e TZ=America/Los_Angeles ' +
-            "-e SERVER_SERVLET_CONTEXT_PATH=/$project-$branch " +
+            "-e SERVER_SERVLET_CONTEXT_PATH=/$branch " +
             "-e BRANCH=$branch " +
             "$project/$branch:$BUILD_NUMBER"
       }
@@ -99,7 +99,7 @@ pipeline {
           )
           // Test new Docker instance directly
           url = ip.trim() + ":$port"
-          sh "curl -f ${url}/$project-$branch/actuator/health > /dev/null"
+          sh "curl -f ${url}/$branch/actuator/health > /dev/null"
         }
       }
     }
