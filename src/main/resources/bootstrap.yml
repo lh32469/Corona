@@ -12,4 +12,4 @@ spring:
           f2: "v2"
         instance-id: "${spring.application.name}:${random.int[1,999999]}"
         prefer-ip-address: true
-        health-check-path: "/${spring.application.name}/actuator/health"
+        health-check-path: "/${BRANCH:dev}/actuator/health"
